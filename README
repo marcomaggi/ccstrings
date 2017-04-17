@@ -22,6 +22,9 @@ Topics
 This package installs a C11  language library implementing custom string
 structures.
 
+  This package  depends on  the package  CCExceptions, at  least version
+0.5.
+
   The package  makes use  of the  GNU Autotools  and it  is tested  on a
 GNU+Linux system.
 
@@ -49,7 +52,8 @@ with this program.  If not, see <https://www.gnu.org/licenses/>.
 3. Install
 ----------
 
-To install from a proper release tarball, do this:
+First  we must  make  sure  that the  package  CCExceptions is  properly
+installed.  To install from a proper release tarball, do this:
 
     $ cd ccstrings-0.1.0
     $ mkdir build
@@ -150,6 +154,10 @@ the documentation is available online:
 the GNU Project software can be found here:
 
 			 <https://www.gnu.org/>
+
+the package CCExceptions can be found here:
+
+	     <https://github.com/marcomaggi/ccexceptions/>
 
 
 ### end of file

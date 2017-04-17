@@ -32,7 +32,9 @@ ccstrings_AGE		= @ccstrings_VERSION_INTERFACE_AGE@
 include_HEADERS		= src/ccstrings.h
 
 lib_LTLIBRARIES		= libccstrings.la
-libccstrings_la_LDFLAGS= -version-info $(ccstrings_CURRENT):$(ccstrings_REVISION):$(ccstrings_AGE)
+libccstrings_la_CPPFLAGS= $(CCEXCEPTIONS_CFLAGS)
+libccstrings_la_LDFLAGS= -version-info $(ccstrings_CURRENT):$(ccstrings_REVISION):$(ccstrings_AGE) \
+			  $(CCEXCEPTIONS_LIBS)
 libccstrings_la_SOURCES= \
 	src/ccstrings.h			\
 	src/ccstrings-internals.h	\
@@ -46,7 +48,7 @@ check_PROGRAMS	= \
 
 TESTS				= $(check_PROGRAMS)
 
-ccstrings_tests_cppflags	= -I$(srcdir)/src
+ccstrings_tests_cppflags	= -I$(srcdir)/src $(CCEXCEPTIONS_FLAGS)
 ccstrings_tests_ldadd		= libccstrings.la
 
 tests_version_CPPFLAGS		= $(ccstrings_tests_cppflags)

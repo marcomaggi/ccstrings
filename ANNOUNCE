@@ -12,6 +12,9 @@ structures.
 GNU+Linux system.  It is distributed under the GNU Lesser General Public
 License version 3.0.
 
+  This package  depends on  the package  CCExceptions, at  least version
+0.5.
+
   The latest release of this package can be downloaded from:
 
 	 <https://bitbucket.org/marcomaggi/ccstrings/downloads>

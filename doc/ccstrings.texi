@@ -49,7 +49,8 @@
 
 @copying
 This document describes version @value{VERSION} of @value{PACKAGE}, a C11 language library
-implementing custom strings.
+implementing custom strings.  This package depends on the package CCExceptions, at least version
+0.5.
 
 The package is distributed under the terms of the @gnu{} General Public
 License (@gpl{}).
@@ -143,7 +144,8 @@ Indexes
 
 
 This document describes version @value{VERSION} of @value{PACKAGE}, a C11 language library
-implementing custom strings.
+implementing custom strings.  This package depends on the package CCExceptions, at least version
+0.5.
 
 @value{PACKAGE} installs the single header file @file{ccstrings.h}.  All the function names in the
 @api{} are prefixed with @code{ccs_}; all the constant names are prefixed with @code{CCS_}; all the
@@ -240,6 +242,10 @@ development takes place at:
 and as backup at:
 
 @center @value{BITBUCKET_URL}
+
+We can find the package CCExceptions at:
+
+@center @url{https://github.com/marcomaggi/ccexceptions/}
 
 @c page
 @node concept index

@@ -78,6 +78,13 @@ AC_CHECK_FUNCS([memmove memset])
 AC_CACHE_SAVE
 
 dnl page
+#### external libraries
+
+PKG_CHECK_MODULES([CCEXCEPTIONS],[ccexceptions >= 0.5])
+
+AC_CACHE_SAVE
+
+dnl page
 #### operating system specific configuration
 
 dnl case "$target_os" in
