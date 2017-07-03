@@ -1,5 +1,5 @@
 -*- coding: utf-8-unix -*-
-Subject: [announce] CCStrings revision 0.1d0
+Subject: [announce] CCStrings revision 0.1.0-devel.0
 
 			       CCStrings
 			       =========
@@ -13,7 +13,7 @@ GNU+Linux system.  It is distributed under the GNU Lesser General Public
 License version 3.0.
 
   This package  depends on  the package  CCExceptions, at  least version
-0.5.
+0.6.
 
   The latest release of this package can be downloaded from:
 
@@ -32,8 +32,8 @@ the documentation is available online:
 	   <https://marcomaggi.github.io/docs/ccstrings.html>
 
 
-Notes for revision 0.1d0
-------------------------
+Notes for revision 0.1.0-devel.0
+--------------------------------
 
 * Initial release.
 

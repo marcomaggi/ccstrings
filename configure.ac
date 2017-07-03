@@ -2,7 +2,7 @@ dnl @configure_input@
 dnl
 
 AC_PREREQ([2.69])
-AC_INIT([CCStrings],[0.1d0],
+AC_INIT([CCStrings],[0.1.0-devel.0],
   [marco.maggi-ipsu@poste.it],
   [ccstrings],[http://marcomaggi.github.com/ccstrings])
 dnl This is the revision number of this configure.ac
@@ -19,8 +19,8 @@ WITHOUT   ANY   WARRANTY;  without   even   the   implied  warranty   of
 MERCHANTABILITY  or  FITNESS FOR  A  PARTICULAR  PURPOSE.  See  the  GNU
 General Public License for more details.
 
-You should have received a copy  of the GNU General Public License along
-with this program.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ])
 AC_CONFIG_SRCDIR([src/])
 AC_CONFIG_MACRO_DIR([meta/autotools])
@@ -43,6 +43,9 @@ LT_INIT
 dnl page
 #### libraries interface version
 
+AS_VAR_SET([SLACKSTUFF_PACKAGE_VERSION],[0.1d0.0])
+AC_SUBST([SLACKSTUFF_PACKAGE_VERSION])
+
 dnl This is the version stored in the pkg-config data file.
 AC_SUBST([CCSTRINGS_PKG_CONFIG_VERSION],[0.1])
 
@@ -53,18 +56,21 @@ dnl page
 
 AC_LANG([C])
 AC_PROG_CC_C99
+
 AX_CHECK_COMPILE_FLAG([-std=c11],[],[AC_MSG_ERROR([*** Compiler does not support -std=c11])],[-pedantic])
 AX_CFLAGS="-std=c11"
 AC_SUBST(AX_CFLAGS)
+
 AM_PROG_AS
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_HEADER_STDC
+AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([assert.h stdint.h strings.h errno.h stddef.h])
-dnl AC_CHECK_SIZEOF(void *)
-AC_C_CONST
-AC_C_INLINE
-AC_C_RESTRICT
+
+dnl The  documentation of GNU  Autoconf states that AC_PROG_CC  sets the
+dnl variable "GCC" to "yes" if the selected compiler is GCC.
+AM_CONDITIONAL([WANT_GCC],[test "x$GCC" = xyes])
 
 AC_CACHE_SAVE
 
@@ -80,7 +86,7 @@ AC_CACHE_SAVE
 dnl page
 #### external libraries
 
-PKG_CHECK_MODULES([CCEXCEPTIONS],[ccexceptions >= 0.5])
+PKG_CHECK_MODULES([CCEXCEPTIONS],[ccexceptions >= 0.6])
 
 AC_CACHE_SAVE
 
@@ -109,6 +115,7 @@ dnl page
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile]
    [meta/scripts/ccstrings.pc]
+   [meta/slackstuff/config]
    [meta/slackware/slack-desc])
 AC_OUTPUT
 
