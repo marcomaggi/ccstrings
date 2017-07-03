@@ -17,13 +17,13 @@
 #include <ccstrings.h>
 
 int
-main (int argc CCS_UNUSED, const char *const argv[] CCS_UNUSED)
+main (int argc CCSTR_UNUSED, const char *const argv[] CCSTR_UNUSED)
 {
-  printf("version number string: %s\n", ccs_version_string());
+  printf("version number string: %s\n", ccstr_version_string());
   printf("libtool version number: %d:%d:%d\n",
-	 ccs_version_interface_current(),
-	 ccs_version_interface_revision(),
-	 ccs_version_interface_age());
+	 ccstr_version_interface_current(),
+	 ccstr_version_interface_revision(),
+	 ccstr_version_interface_age());
   exit(EXIT_SUCCESS);
 }
 

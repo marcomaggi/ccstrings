@@ -19,8 +19,9 @@
   MERCHANTABILITY  or FITNESS  FOR A  PARTICULAR PURPOSE.   See  the GNU
   General Public License for more details.
 
-  You  should have received  a copy  of the  GNU General  Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  You  should have  received a  copy of  the GNU  Lesser General  Public
+  License     along    with     this    program.      If    not,     see
+  <http://www.gnu.org/licenses/>.
 */
 
 
@@ -32,22 +33,22 @@
 
 
 const char *
-ccs_version_string (void)
+ccstr_version_string (void)
 {
   return ccstrings_VERSION_INTERFACE_STRING;
 }
 int
-ccs_version_interface_current (void)
+ccstr_version_interface_current (void)
 {
   return ccstrings_VERSION_INTERFACE_CURRENT;
 }
 int
-ccs_version_interface_revision (void)
+ccstr_version_interface_revision (void)
 {
   return ccstrings_VERSION_INTERFACE_REVISION;
 }
 int
-ccs_version_interface_age (void)
+ccstr_version_interface_age (void)
 {
   return ccstrings_VERSION_INTERFACE_AGE;
 }
