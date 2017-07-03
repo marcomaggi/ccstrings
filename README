@@ -21,10 +21,8 @@ Topics
 ---------------
 
 This package installs a C11  language library implementing custom string
-structures.
-
-  This package  depends on  the package  CCExceptions, at  least version
-0.5.
+structures.  This package depends on  the package CCExceptions, at least
+version 0.6.
 
   The package  makes use  of the  GNU Autotools  and it  is tested  on a
 GNU+Linux system.
