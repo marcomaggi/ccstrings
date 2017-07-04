@@ -12,9 +12,9 @@
   See the COPYING file.
 */
 
+#include <ccstrings.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <ccstrings.h>
 
 int
 main (int argc CCSTR_UNUSED, const char *const argv[] CCSTR_UNUSED)

@@ -38,6 +38,9 @@
 #endif
 #include "ccstrings.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 
 /** --------------------------------------------------------------------
  ** Preprocessor macros.

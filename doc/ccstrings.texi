@@ -126,6 +126,7 @@ included in the section entitled ``@gnu{} Free Documentation License''.
 @menu
 * overview::                    Overview of the package.
 * version::                     Version functions.
+* buffers::                     Collecting output in buffers.
 
 Appendices
 
@@ -212,6 +213,166 @@ number.
 
 @deftypefun int ccstr_version_interface_age (void)
 Return an integer representing the library interface current age.
+@end deftypefun
+
+@c page
+@node buffers
+@chapter Collecting output in buffers
+
+
+Programmatically generated textual output is gathered in @dfn{buffers}: dynamically allocated blocks
+of memory that can be resized and to which we write with functions similar to the standard
+@cfunc{vsnprintf}.
+
+A buffer can be initialised and finalised as follows:
+
+@example
+cce_location_t        L[1];
+ccstr_buffer_t        B[1];
+
+if (cce_location(L)) @{
+  cce_run_error_handlers(L);
+  cce_condition_free(cce_condition(L));
+@} else @{
+  ccstr_buffer_init(L, B, 123);
+  ccstr_buffer_final(B);
+  cce_run_cleanup_handlers(L);
+@}
+@end example
+
+@noindent
+but it is more handy to use the predefined CCExceptions handler:
+
+@example
+cce_location_t        L[1];
+ccstr_buffer_t        B[1];
+ccstr_buffer_H_t      B_H[1];
+
+if (cce_location(L)) @{
+  cce_run_error_handlers(L);
+  cce_condition_free(cce_condition(L));
+@} else @{
+  ccstr_buffer_init(L, B, 123);
+  ccstr_cleanup_handler_buffer_init(L, B_H, B);
+  cce_run_cleanup_handlers(L);
+@}
+@end example
+
+@c ------------------------------------------------------------------------
+
+@subsubheading Basic @api{}
+
+
+@deftp {Struct Typedef} ccstr_buffer_t
+Type of data structures representing output buffers.
+@end deftp
+
+
+@deftypefun void ccstr_buffer_init (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{buflen})
+Initialise an already allocated buffer structure.  Allocate memory for the buffer at the initial
+size of @var{initial_buflen}.  If an error occurs allocating: perform a non--local exit by jumping
+to @var{L}.
+@end deftypefun
+
+
+@deftypefun void ccstr_buffer_final (ccstr_buffer_t * @var{B})
+Finalise the buffer structure.  Release data memory allocated for the buffer.  Reset the structure
+fields.  The block of memory holding the structure itself is left untouched.
+@end deftypefun
+
+
+@deftypefun void ccstr_buffer_write (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, @dots{})
+Format a string and append it to the buffer.  If there is not enough free room in the buffer:
+reallocate it enlarging the size.  If an error occurs reallocating: perform a non--local exit by
+jumping to @var{L}.
+
+The buffer is formatted according to @var{template} and the given optional arguments.  The supported
+format is the same of the standard @cfunc{printf}.
+@end deftypefun
+
+
+@deftypefun void ccstr_buffer_vwrite (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, va_list @var{qp})
+Like @cfunc{ccstr_buffer_write}, but reads arguments from @var{ap}.  Internally @var{ap} is
+duplicated, so externally it is left untouched.  We can use this function as follows:
+
+@example
+void
+print (cce_location_t * L, ccstr_buffer_t * B,
+       const char * template, ...)
+@{
+  va_list       ap;
+
+  va_start(ap, template);
+  @{
+    ccstr_buffer_vwrite(L, B, "X=%g\n", ap);
+  @}
+  va_end(ap);
+@}
+@end example
+@end deftypefun
+
+@c ------------------------------------------------------------------------
+
+@subsubheading CCExceptions handler
+
+
+@deftp {Struct Type} ccstr_buffer_H_t
+Type of data structures representing handlers for @objtype{ccstr_buffer_t} objects.
+@end deftp
+
+
+@deftypefun void ccstr_cleanup_handler_buffer_init (cce_location_t * @var{L}, ccstr_buffer_H_t * @var{H}, ccstr_buffer_t * @var{B})
+Initialise the handler @var{H} to manage finalisation of the buffer @var{B}.  Register @var{H} as
+cleanup handler in the context of the location @var{L}.
+@end deftypefun
+
+
+@deftypefun void ccstr_error_handler_buffer_init (cce_location_t * @var{L}, ccstr_buffer_H_t * @var{H}, ccstr_buffer_t * @var{B})
+Initialise the handler @var{H} to manage finalisation of the buffer @var{B}.  Register @var{H} as
+error handler in the context of the location @var{L}.
+@end deftypefun
+
+
+@deftypefn {Generic Macro} {ccstr_buffer_H_t *} ccstr_cast_to_handler_buffer (cce_handler_t * @var{H})
+Cast a pointer to generic handler to a pointer to buffer handler.  This macro performs type
+checking.
+@end deftypefn
+
+@c ------------------------------------------------------------------------
+
+@subsubheading Inspection
+
+
+@deftypefun {char *} ccstr_buffer_output (ccstr_buffer_t * @var{B})
+Return a pointer to the first character in the buffer.
+@end deftypefun
+
+
+@deftypefun bool ccstr_buffer_full_p (ccstr_buffer_t * @var{B})
+Return @true{} if the buffer is full; otherwise return @false{}.
+@end deftypefun
+
+
+@deftypefun {char *} ccstr_buffer_output_target (ccstr_buffer_t * @var{B})
+Return a pointer to the first free character in the buffer.  The return value of this function is
+meaningful only if a call to @cfunc{ccstr_buffer_full_p} applied to the same buffer returns
+@false{}.
+@end deftypefun
+
+
+@deftypefun size_t ccstr_buffer_output_size (ccstr_buffer_t * @var{B})
+Return the number of bytes available in the buffer.  The return value of this function is meaningful
+only if a call to @cfunc{ccstr_buffer_full_p} applied to the same buffer returns @false{}.
+@end deftypefun
+
+@c ------------------------------------------------------------------------
+
+@subsubheading Memory handling
+
+
+@deftypefun void ccstr_buffer_enlarge (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{required_len})
+Reallocate the buffer enlarging it so that it can hold more than @var{required_len} characters.  If
+an error occurs reallocating: perform a non--local exit by jumping to @var{L}.
 @end deftypefun
 
 @c page

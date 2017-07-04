@@ -6,7 +6,7 @@ EXTRA_DIST		= INSTALL configure.sh		\
 			  meta/slackstuff/config.in	\
 			  meta/slackware/slack-desc.in
 dist_doc_DATA		= README COPYING
-AM_CFLAGS		= -I$(srcdir)/src -I$(builddir)/src -Wall $(AX_CFLAGS)
+AM_CFLAGS		= $(AX_CFLAGS) -Wall -I$(srcdir)/src -I$(builddir)/src
 
 ## --------------------------------------------------------------------
 
@@ -35,18 +35,20 @@ include_HEADERS		= src/ccstrings.h
 
 lib_LTLIBRARIES		= libccstrings.la
 libccstrings_la_CPPFLAGS= $(CCEXCEPTIONS_CFLAGS)
-libccstrings_la_LDFLAGS= -version-info $(ccstrings_CURRENT):$(ccstrings_REVISION):$(ccstrings_AGE) \
+libccstrings_la_LDFLAGS	= -version-info $(ccstrings_CURRENT):$(ccstrings_REVISION):$(ccstrings_AGE) \
 			  $(CCEXCEPTIONS_LIBS)
 libccstrings_la_SOURCES= \
 	src/ccstrings.h			\
 	src/ccstrings-internals.h	\
-	src/ccstrings-version.c
+	src/ccstrings-version.c		\
+	src/ccstrings-buffer.c
 
 #page
 #### tests
 
 check_PROGRAMS	= \
-	tests/version
+	tests/version		\
+	tests/buffers
 
 TESTS				= $(check_PROGRAMS)
 
@@ -55,6 +57,9 @@ ccstrings_tests_ldadd		= libccstrings.la $(CCEXCEPTIONS_LIBS)
 
 tests_version_CPPFLAGS		= $(ccstrings_tests_cppflags)
 tests_version_LDADD		= $(ccstrings_tests_ldadd)
+
+tests_buffers_CPPFLAGS		= $(ccstrings_tests_cppflags)
+tests_buffers_LDADD		= $(ccstrings_tests_ldadd)
 
 installcheck-local: $(TESTS)
 	@for f in $(TESTS); do $(builddir)/$$f; done
