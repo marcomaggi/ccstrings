@@ -132,7 +132,7 @@ struct ccstr_buffer_t {
   size_t	bufoff;
 };
 
-ccstr_decl void ccstr_buffer_init (cce_location_t * L, ccstr_buffer_t * B, size_t buflen)
+ccstr_decl void ccstr_buffer_init (cce_location_t * L, ccstr_buffer_t * B, size_t initial_buflen)
   __attribute__((nonnull(1,2)));
 
 ccstr_decl void ccstr_buffer_final (ccstr_buffer_t * B)
@@ -149,7 +149,7 @@ ccstr_decl void ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, si
 
 /* ------------------------------------------------------------------ */
 
-__attribute__((pure,nonnull(1),always_inline))
+__attribute__((pure,nonnull(1),returns_nonnull,always_inline))
 static inline char *
 ccstr_buffer_output (ccstr_buffer_t * B)
 /* Return a pointer to the first character in the buffer.  */

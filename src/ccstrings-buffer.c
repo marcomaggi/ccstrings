@@ -27,6 +27,7 @@
 */
 
 #include "ccstrings-internals.h"
+#include <limits.h>
 #include <assert.h>
 #include <string.h>
 
@@ -96,16 +97,39 @@ ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_le
    "required_len" characters.  If an  error occurs reallocating: perform
    a non-local exit by jumping to L. */
 {
-  size_t	tmplen;
   size_t	new_buflen;
 
   /* We want the new buffer length to  be a multiple of 4096 that leaves
      at least 4096 free characters  at the end after "newlen" characters
      have been consumed. */
-  for (tmplen = B->buflen % 4096; tmplen > required_len; tmplen += 4096);
-  tmplen	+= 4096;
+  if (0) {
+    size_t	tmplen;
+    for (tmplen = B->buflen % 4096; tmplen > required_len; tmplen += 4096);
+    tmplen	+= 4096;
+    new_buflen	= B->buflen + tmplen;
+  } else {
+    /* We would like the "new_buflen" to be:
+     *
+     *   ((B->buflen + required_len) % 4096) * 4096 + 4096 + 4096
+     *
+     * we can compute this as:
+     *
+     *   ((B->buflen % 4096) + (required_len % 4096)) * 4096 + 4096 + 4096
+     *   ((B->buflen % 4096) + (required_len % 4096) + 2) * 4096
+     *   ((B->buflen % 4096) + (required_len % 4096) + 2) << 12
+     *
+     * but we  must also check  for overflow  when doing the  shift.  We
+     * take  "UINT_MAX" as  upper  limit for  the  buffer size  (maximum
+     * number of bytes).
+     */
+    size_t	num_of_chunks = (B->buflen % 4096) + (required_len % 4096) + 2;
+    if ((UINT_MAX >> 12) > num_of_chunks) {
+      new_buflen = num_of_chunks << 12;
+    } else {
+      assert(0);
+    }
+  }
 
-  new_buflen	= B->buflen + tmplen;
   B->bufptr	= cce_sys_realloc(L, B->bufptr, new_buflen);
   B->buflen	= new_buflen;
 }

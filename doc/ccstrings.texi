@@ -224,6 +224,20 @@ Programmatically generated textual output is gathered in @dfn{buffers}: dynamica
 of memory that can be resized and to which we write with functions similar to the standard
 @cfunc{vsnprintf}.
 
+@menu
+* buffers intro::               Buffers introduction and examples.
+* buffers typedefs::            Buffer type definitions.
+* buffers output::              Writing output to buffers.
+* buffers handlers::            Buffer finalisation with handlers.
+* buffers inspection::          Inspecting buffers.
+* buffers memory::              Buffers memory handlers.
+@end menu
+
+@c page
+@node buffers intro
+@section Buffers introduction and examples
+
+
 A buffer can be initialised and finalised as follows:
 
 @example
@@ -231,10 +245,12 @@ cce_location_t        L[1];
 ccstr_buffer_t        B[1];
 
 if (cce_location(L)) @{
-  cce_run_error_handlers(L);
-  cce_condition_free(cce_condition(L));
+  cce_run_error_handlers_final(L);
 @} else @{
   ccstr_buffer_init(L, B, 123);
+  @{
+    /* Do something with "B" here. */
+  @}
   ccstr_buffer_final(B);
   cce_run_cleanup_handlers(L);
 @}
@@ -244,23 +260,26 @@ if (cce_location(L)) @{
 but it is more handy to use the predefined CCExceptions handler:
 
 @example
-cce_location_t        L[1];
-ccstr_buffer_t        B[1];
-ccstr_buffer_H_t      B_H[1];
+cce_location_t  L[1];
+ccstr_buffer_t  B[1];
+cce_handler_t   B_H[1];
 
 if (cce_location(L)) @{
-  cce_run_error_handlers(L);
-  cce_condition_free(cce_condition(L));
+  cce_run_error_handlers_final(L);
 @} else @{
   ccstr_buffer_init(L, B, 123);
   ccstr_cleanup_handler_buffer_init(L, B_H, B);
+  @{
+    /* Do something with "B" here. */
+  @}
   cce_run_cleanup_handlers(L);
 @}
 @end example
 
-@c ------------------------------------------------------------------------
+@c page
+@node buffers typedefs
+@section Buffer type definitions
 
-@subsubheading Basic @api{}
 
 
 @deftp {Struct Typedef} ccstr_buffer_t
@@ -268,7 +287,7 @@ Type of data structures representing output buffers.
 @end deftp
 
 
-@deftypefun void ccstr_buffer_init (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{buflen})
+@deftypefun void ccstr_buffer_init (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{initial_buflen})
 Initialise an already allocated buffer structure.  Allocate memory for the buffer at the initial
 size of @var{initial_buflen}.  If an error occurs allocating: perform a non--local exit by jumping
 to @var{L}.
@@ -281,6 +300,11 @@ fields.  The block of memory holding the structure itself is left untouched.
 @end deftypefun
 
 
+@c page
+@node buffers output
+@section Writing output to buffers
+
+
 @deftypefun void ccstr_buffer_write (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, @dots{})
 Format a string and append it to the buffer.  If there is not enough free room in the buffer:
 reallocate it enlarging the size.  If an error occurs reallocating: perform a non--local exit by
@@ -291,7 +315,7 @@ format is the same of the standard @cfunc{printf}.
 @end deftypefun
 
 
-@deftypefun void ccstr_buffer_vwrite (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, va_list @var{qp})
+@deftypefun void ccstr_buffer_vwrite (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, va_list @var{ap})
 Like @cfunc{ccstr_buffer_write}, but reads arguments from @var{ap}.  Internally @var{ap} is
 duplicated, so externally it is left untouched.  We can use this function as follows:
 
@@ -311,40 +335,30 @@ print (cce_location_t * L, ccstr_buffer_t * B,
 @end example
 @end deftypefun
 
-@c ------------------------------------------------------------------------
-
-@subsubheading CCExceptions handler
-
-
-@deftp {Struct Type} ccstr_buffer_H_t
-Type of data structures representing handlers for @objtype{ccstr_buffer_t} objects.
-@end deftp
+@c page
+@node buffers handlers
+@section Buffer finalisation with handlers
 
 
-@deftypefun void ccstr_cleanup_handler_buffer_init (cce_location_t * @var{L}, ccstr_buffer_H_t * @var{H}, ccstr_buffer_t * @var{B})
-Initialise the handler @var{H} to manage finalisation of the buffer @var{B}.  Register @var{H} as
+@deftypefun void ccstr_cleanup_handler_buffer_init (cce_location_t * @var{L}, cce_handler_t * @var{H}, ccstr_buffer_t * @var{B})
+Initialise the handler @var{H} to manage finalisation of the buffer @var{B}; register @var{H} as
 cleanup handler in the context of the location @var{L}.
 @end deftypefun
 
 
-@deftypefun void ccstr_error_handler_buffer_init (cce_location_t * @var{L}, ccstr_buffer_H_t * @var{H}, ccstr_buffer_t * @var{B})
-Initialise the handler @var{H} to manage finalisation of the buffer @var{B}.  Register @var{H} as
+@deftypefun void ccstr_error_handler_buffer_init (cce_location_t * @var{L}, cce_handler_t * @var{H}, ccstr_buffer_t * @var{B})
+Initialise the handler @var{H} to manage finalisation of the buffer @var{B}; register @var{H} as
 error handler in the context of the location @var{L}.
 @end deftypefun
 
-
-@deftypefn {Generic Macro} {ccstr_buffer_H_t *} ccstr_cast_to_handler_buffer (cce_handler_t * @var{H})
-Cast a pointer to generic handler to a pointer to buffer handler.  This macro performs type
-checking.
-@end deftypefn
-
-@c ------------------------------------------------------------------------
-
-@subsubheading Inspection
+@c page
+@node buffers inspection
+@section Inspecting buffers
 
 
 @deftypefun {char *} ccstr_buffer_output (ccstr_buffer_t * @var{B})
-Return a pointer to the first character in the buffer.
+Return a pointer to the first character in the buffer.  If @var{B} references an initialised buffer:
+the returned pointer is never @cnull{}.
 @end deftypefun
 
 
@@ -365,14 +379,15 @@ Return the number of bytes available in the buffer.  The return value of this fu
 only if a call to @cfunc{ccstr_buffer_full_p} applied to the same buffer returns @false{}.
 @end deftypefun
 
-@c ------------------------------------------------------------------------
-
-@subsubheading Memory handling
+@c page
+@node buffers memory
+@section Buffers memory handlers
 
 
 @deftypefun void ccstr_buffer_enlarge (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{required_len})
 Reallocate the buffer enlarging it so that it can hold more than @var{required_len} characters.  If
-an error occurs reallocating: perform a non--local exit by jumping to @var{L}.
+an error occurs reallocating: perform a non--local exit by jumping to @var{L}; in this case the
+buffer is left untouched.
 @end deftypefun
 
 @c page
