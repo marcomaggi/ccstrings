@@ -79,7 +79,7 @@ test_buffer_write (void)
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
-  cce_handler_t	B_H[1];
+  cce_handler_t		B_H[1];
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
@@ -104,7 +104,7 @@ test_buffer_write_realloc (void)
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
-  cce_handler_t	B_H[1];
+  cce_handler_t		B_H[1];
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
@@ -128,7 +128,7 @@ test_buffer_write_multiple (void)
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
-  cce_handler_t	B_H[1];
+  cce_handler_t		B_H[1];
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
@@ -154,7 +154,7 @@ test_buffer_write_multiple_realloc (void)
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
-  cce_handler_t	B_H[1];
+  cce_handler_t		B_H[1];
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
