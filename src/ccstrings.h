@@ -155,10 +155,10 @@ ccstr_decl void ccstr_buffer_init (cce_location_t * L, ccstr_buffer_t * B, size_
 ccstr_decl void ccstr_buffer_final (ccstr_buffer_t * B)
   __attribute__((nonnull(1)));
 
-ccstr_decl void ccstr_buffer_write (cce_location_t * L, ccstr_buffer_t * B, const char * template, ...)
+ccstr_decl void ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * template, ...)
   __attribute__((nonnull(1,2,3)));
 
-ccstr_decl void ccstr_buffer_vwrite (cce_location_t * L, ccstr_buffer_t * B, const char * template, va_list ap)
+ccstr_decl void ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, const char * template, va_list ap)
   __attribute__((nonnull(1,2,3)));
 
 ccstr_decl void ccstr_buffer_fwrite (cce_location_t * L, ccstr_buffer_t * B, FILE * stream)

@@ -136,11 +136,11 @@ ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_le
 
 
 /** --------------------------------------------------------------------
- ** Writing output.
+ ** Formatting buffer contents.
  ** ----------------------------------------------------------------- */
 
 void
-ccstr_buffer_write (cce_location_t * L, ccstr_buffer_t * B, const char * template, ...)
+ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * template, ...)
 {
   size_t	required_len = 0;
 
@@ -182,7 +182,7 @@ ccstr_buffer_write (cce_location_t * L, ccstr_buffer_t * B, const char * templat
 }
 
 void
-ccstr_buffer_vwrite (cce_location_t * L, ccstr_buffer_t * B, const char * template, va_list ap)
+ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, const char * template, va_list ap)
 {
   size_t	required_len = 0;
 
@@ -222,6 +222,11 @@ ccstr_buffer_vwrite (cce_location_t * L, ccstr_buffer_t * B, const char * templa
     va_end(aq);
   }
 }
+
+
+/** --------------------------------------------------------------------
+ ** Writing output.
+ ** ----------------------------------------------------------------- */
 
 void
 ccstr_buffer_fwrite (cce_location_t * L, ccstr_buffer_t * B, FILE * stream)

@@ -398,6 +398,7 @@ of memory that can be resized and to which we write with functions similar to th
 @menu
 * buffers intro::               Buffers introduction and examples.
 * buffers typedefs::            Buffer type definitions.
+* buffers format::              Formatting buffer contents.
 * buffers output::              Writing output to buffers.
 * buffers handlers::            Buffer finalisation with handlers.
 * buffers inspection::          Inspecting buffers.
@@ -472,11 +473,11 @@ fields.  The block of memory holding the structure itself is left untouched.
 
 
 @c page
-@node buffers output
-@section Writing output to buffers
+@node buffers format
+@section Formatting buffer contents
 
 
-@deftypefun void ccstr_buffer_write (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, @dots{})
+@deftypefun void ccstr_buffer_format (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, @dots{})
 Format a string and append it to the buffer.  If there is not enough free room in the buffer:
 reallocate it enlarging the size.  If an error occurs reallocating: perform a non--local exit by
 jumping to @var{L}.
@@ -486,8 +487,8 @@ format is the same of the standard @cfunc{printf}.
 @end deftypefun
 
 
-@deftypefun void ccstr_buffer_vwrite (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, va_list @var{ap})
-Like @cfunc{ccstr_buffer_write}, but reads arguments from @var{ap}.  Internally @var{ap} is
+@deftypefun void ccstr_buffer_vformat (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, va_list @var{ap})
+Like @cfunc{ccstr_buffer_format}, but reads arguments from @var{ap}.  Internally @var{ap} is
 duplicated, so externally it is left untouched.  We can use this function as follows:
 
 @example
@@ -499,12 +500,16 @@ print (cce_location_t * L, ccstr_buffer_t * B,
 
   va_start(ap, template);
   @{
-    ccstr_buffer_vwrite(L, B, "X=%g\n", ap);
+    ccstr_buffer_vformat(L, B, "X=%g\n", ap);
   @}
   va_end(ap);
 @}
 @end example
 @end deftypefun
+
+@c page
+@node buffers output
+@section Writing output to buffers
 
 
 @deftypefun void ccstr_buffer_fwrite (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, FILE * @var{stream})

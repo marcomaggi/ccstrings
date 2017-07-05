@@ -74,7 +74,7 @@ test_buffer_handler (void)
 
 
 static void
-test_buffer_write (void)
+test_buffer_format (void)
 /* Test writing a string to the buffer. */
 {
   cce_location_t	L[1];
@@ -88,7 +88,7 @@ test_buffer_write (void)
   } else {
     ccstr_buffer_init(L, B, 123);
     ccstr_cleanup_handler_buffer_init(L, B_H, B);
-    ccstr_buffer_write(L, B, "ciao\n");
+    ccstr_buffer_format(L, B, "ciao\n");
     if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
     assert(0 == strcmp(ccstr_buffer_output(B), "ciao\n"));
     cce_run_cleanup_handlers(L);
@@ -98,7 +98,7 @@ test_buffer_write (void)
 
 
 static void
-test_buffer_write_realloc (void)
+test_buffer_format_realloc (void)
 /* Test  writing  a  string  to  the  buffer in  a  way  that  causes  a
    reallocation of the buffer. */
 {
@@ -113,7 +113,7 @@ test_buffer_write_realloc (void)
   } else {
     ccstr_buffer_init(L, B, 1);
     ccstr_cleanup_handler_buffer_init(L, B_H, B);
-    ccstr_buffer_write(L, B, "ciao %d %d %d\n", 1, 2, 3);
+    ccstr_buffer_format(L, B, "ciao %d %d %d\n", 1, 2, 3);
     if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
     assert(0 == strcmp(ccstr_buffer_output(B), "ciao 1 2 3\n"));
     cce_run_cleanup_handlers(L);
@@ -123,7 +123,7 @@ test_buffer_write_realloc (void)
 
 
 static void
-test_buffer_write_multiple (void)
+test_buffer_format_multiple (void)
 /* Test writing multiple strings to the buffer. */
 {
   cce_location_t	L[1];
@@ -137,8 +137,8 @@ test_buffer_write_multiple (void)
   } else {
     ccstr_buffer_init(L, B, 123);
     ccstr_cleanup_handler_buffer_init(L, B_H, B);
-    ccstr_buffer_write(L, B, "ciao");
-    ccstr_buffer_write(L, B, " mamma\n");
+    ccstr_buffer_format(L, B, "ciao");
+    ccstr_buffer_format(L, B, " mamma\n");
     if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
     assert(0 == strcmp(ccstr_buffer_output(B), "ciao mamma\n"));
     cce_run_cleanup_handlers(L);
@@ -148,7 +148,7 @@ test_buffer_write_multiple (void)
 
 
 static void
-test_buffer_write_multiple_realloc (void)
+test_buffer_format_multiple_realloc (void)
 /* Test writing  multiple strings to the  buffer in a way  that causes a
    reallocation of the buffer. */
 {
@@ -163,8 +163,8 @@ test_buffer_write_multiple_realloc (void)
   } else {
     ccstr_buffer_init(L, B, 1);
     ccstr_cleanup_handler_buffer_init(L, B_H, B);
-    ccstr_buffer_write(L, B, "ciao ");
-    ccstr_buffer_write(L, B, "mamma\n");
+    ccstr_buffer_format(L, B, "ciao ");
+    ccstr_buffer_format(L, B, "mamma\n");
     if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
     assert(0 == strcmp(ccstr_buffer_output(B), "ciao mamma\n"));
     cce_run_cleanup_handlers(L);
@@ -174,7 +174,7 @@ test_buffer_write_multiple_realloc (void)
 
 
 static void
-test_buffer_write_to_stream (void)
+test_buffer_format_to_stream (void)
 /* Test writing a buffer to a "FILE". */
 {
   cce_location_t	L[1];
@@ -188,8 +188,8 @@ test_buffer_write_to_stream (void)
   } else {
     ccstr_buffer_init(L, B, 1);
     ccstr_cleanup_handler_buffer_init(L, B_H, B);
-    ccstr_buffer_write(L, B, "ciao ");
-    ccstr_buffer_write(L, B, "mamma\n");
+    ccstr_buffer_format(L, B, "ciao ");
+    ccstr_buffer_format(L, B, "mamma\n");
     if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
     ccstr_buffer_fwrite(L, B, stdout);
     assert(0 == strcmp(ccstr_buffer_output(B), "ciao mamma\n"));
@@ -204,11 +204,11 @@ main (int argc CCSTR_UNUSED, const char *const argv[] CCSTR_UNUSED)
 {
   if (1) { test_buffer_allocation(); }
   if (1) { test_buffer_handler(); }
-  if (1) { test_buffer_write(); }
-  if (1) { test_buffer_write_realloc(); }
-  if (1) { test_buffer_write_multiple(); }
-  if (1) { test_buffer_write_multiple_realloc(); }
-  if (1) { test_buffer_write_to_stream(); }
+  if (1) { test_buffer_format(); }
+  if (1) { test_buffer_format_realloc(); }
+  if (1) { test_buffer_format_multiple(); }
+  if (1) { test_buffer_format_multiple_realloc(); }
+  if (1) { test_buffer_format_to_stream(); }
   exit(EXIT_SUCCESS);
 }
 
