@@ -173,6 +173,32 @@ test_buffer_write_multiple_realloc (void)
 }
 
 
+static void
+test_buffer_write_to_stream (void)
+/* Test writing a buffer to a "FILE". */
+{
+  cce_location_t	L[1];
+  ccstr_buffer_t	B[1];
+  cce_handler_t		B_H[1];
+  volatile bool		error_flag = false;
+
+  if (cce_location(L)) {
+    cce_run_error_handlers_final(L);
+    error_flag = true;
+  } else {
+    ccstr_buffer_init(L, B, 1);
+    ccstr_cleanup_handler_buffer_init(L, B_H, B);
+    ccstr_buffer_write(L, B, "ciao ");
+    ccstr_buffer_write(L, B, "mamma\n");
+    if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
+    ccstr_buffer_fwrite(L, B, stdout);
+    assert(0 == strcmp(ccstr_buffer_output(B), "ciao mamma\n"));
+    cce_run_cleanup_handlers(L);
+  }
+  assert(false == error_flag);
+}
+
+
 int
 main (int argc CCSTR_UNUSED, const char *const argv[] CCSTR_UNUSED)
 {
@@ -182,6 +208,7 @@ main (int argc CCSTR_UNUSED, const char *const argv[] CCSTR_UNUSED)
   if (1) { test_buffer_write_realloc(); }
   if (1) { test_buffer_write_multiple(); }
   if (1) { test_buffer_write_multiple_realloc(); }
+  if (1) { test_buffer_write_to_stream(); }
   exit(EXIT_SUCCESS);
 }
 

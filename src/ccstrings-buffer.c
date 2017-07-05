@@ -223,4 +223,17 @@ ccstr_buffer_vwrite (cce_location_t * L, ccstr_buffer_t * B, const char * templa
   }
 }
 
+void
+ccstr_buffer_fwrite (cce_location_t * L, ccstr_buffer_t * B, FILE * stream)
+{
+  const size_t	count = B->bufoff;
+  size_t	rv;
+
+  errno = 0;
+  rv = fwrite(B->bufptr, 1, count, stream);
+  if (count != rv) {
+    cce_raise(L, cce_condition_new_errno_clear());
+  }
+}
+
 /* end of file */

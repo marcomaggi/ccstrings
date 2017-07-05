@@ -506,6 +506,12 @@ print (cce_location_t * L, ccstr_buffer_t * B,
 @end example
 @end deftypefun
 
+
+@deftypefun void ccstr_buffer_fwrite (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, FILE * @var{stream})
+Write the buffer contents to @var{stream}.  If an error occurs: raise an exception by performing a
+non--local exit to @var{L}.
+@end deftypefun
+
 @c page
 @node buffers handlers
 @section Buffer finalisation with handlers

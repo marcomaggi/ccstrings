@@ -88,6 +88,7 @@ extern "C" {
  ** ----------------------------------------------------------------- */
 
 #include <ccexceptions.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -143,7 +144,8 @@ struct ccstr_buffer_t {
   /* Number of bytes allocated for the output buffer. */
   size_t	buflen;
 
-  /* Offset of the next free byte in the output buffer. */
+  /* Offset of  the next free byte  in the output buffer.   This is also
+     the number of bytes used in the buffer. */
   size_t	bufoff;
 };
 
@@ -157,6 +159,9 @@ ccstr_decl void ccstr_buffer_write (cce_location_t * L, ccstr_buffer_t * B, cons
   __attribute__((nonnull(1,2,3)));
 
 ccstr_decl void ccstr_buffer_vwrite (cce_location_t * L, ccstr_buffer_t * B, const char * template, va_list ap)
+  __attribute__((nonnull(1,2,3)));
+
+ccstr_decl void ccstr_buffer_fwrite (cce_location_t * L, ccstr_buffer_t * B, FILE * stream)
   __attribute__((nonnull(1,2,3)));
 
 ccstr_decl void ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_len)
