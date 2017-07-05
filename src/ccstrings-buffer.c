@@ -126,7 +126,7 @@ ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_le
     if ((UINT_MAX >> 12) > num_of_chunks) {
       new_buflen = num_of_chunks << 12;
     } else {
-      assert(0);
+      cce_raise(L, ccstr_condition_new_buffer_size_overflow(L, B, required_len));
     }
   }
 

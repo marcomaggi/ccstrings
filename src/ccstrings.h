@@ -101,6 +101,14 @@ extern "C" {
 
 
 /** --------------------------------------------------------------------
+ ** Initialisation.
+ ** ----------------------------------------------------------------- */
+
+ccstr_decl void ccstr_init (void)
+  __attribute__((constructor));
+
+
+/** --------------------------------------------------------------------
  ** Version functions.
  ** ----------------------------------------------------------------- */
 
@@ -114,7 +122,14 @@ ccstr_decl int		ccstr_version_interface_age	(void);
  ** Forward declarations.
  ** ----------------------------------------------------------------- */
 
-typedef struct ccstr_buffer_t		ccstr_buffer_t;
+typedef struct ccstr_buffer_t			ccstr_buffer_t;
+
+typedef struct ccstr_descriptor_base_t		ccstr_descriptor_base_t;
+typedef struct ccstr_condition_base_t		ccstr_condition_base_t;
+
+typedef struct ccstr_descriptor_buffer_size_overflow_t	ccstr_descriptor_buffer_size_overflow_t;
+typedef struct ccstr_condition_buffer_size_overflow_t	ccstr_condition_buffer_size_overflow_t;
+
 
 
 /** --------------------------------------------------------------------
@@ -195,6 +210,42 @@ ccstr_decl void ccstr_cleanup_handler_buffer_init (cce_location_t * L, cce_handl
 
 ccstr_decl void ccstr_error_handler_buffer_init (cce_location_t * L, cce_handler_t * H, ccstr_buffer_t * B)
   __attribute__((nonnull(1,2,3)));
+
+
+/** --------------------------------------------------------------------
+ ** Condition objects definitions.
+ ** ----------------------------------------------------------------- */
+
+struct ccstr_descriptor_base_t {
+  cce_descriptor_t      descriptor;
+};
+
+struct ccstr_condition_base_t {
+  cce_condition_root_t  root;
+};
+
+ccstr_decl const ccstr_descriptor_base_t * const ccstr_descriptor_base;
+
+ccstr_decl void ccstr_condition_init_base (ccstr_condition_base_t * C);
+ccstr_decl bool ccstr_condition_is_base (const cce_condition_t * C);
+
+/* ------------------------------------------------------------------ */
+
+struct ccstr_descriptor_buffer_size_overflow_t {
+  cce_descriptor_t      descriptor;
+};
+
+struct ccstr_condition_buffer_size_overflow_t {
+  ccstr_condition_base_t	base;
+  ccstr_buffer_t *		buffer;
+  size_t			required_len;
+};
+
+ccstr_decl const ccstr_descriptor_buffer_size_overflow_t * const ccstr_descriptor_buffer_size_overflow;
+
+ccstr_decl cce_condition_t * ccstr_condition_new_buffer_size_overflow (cce_location_t * L, ccstr_buffer_t * B, size_t required_len);
+ccstr_decl void ccstr_condition_init_buffer_size_overflow (ccstr_condition_buffer_size_overflow_t * C, ccstr_buffer_t * B, size_t required_len);
+ccstr_decl bool ccstr_condition_is_buffer_size_overflow (const cce_condition_t * C);
 
 
 /** --------------------------------------------------------------------

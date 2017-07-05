@@ -126,6 +126,8 @@ included in the section entitled ``@gnu{} Free Documentation License''.
 @menu
 * overview::                    Overview of the package.
 * version::                     Version functions.
+* init::                        Library initialisation.
+* conditions::                  Condition objects.
 * buffers::                     Collecting output in buffers.
 
 Appendices
@@ -155,6 +157,24 @@ implementing custom strings.  This package depends on the package CCExceptions, 
 @value{PACKAGE} installs the single header file @file{ccstrings.h}.  All the function names in the
 @api{} are prefixed with @code{ccstr_}; all the constant names are prefixed with @code{CCSTR_}; all
 the type names are prefixed with @code{ccstr_} and suffixed with @code{_t}.
+
+@strong{IMPORTANT} To use the library we must enable the appropriate @posix{} features when
+including the standard header files; so either: we include @file{ccexceptions.h} as first header, or
+we include @file{ccstrings.h} as first header, or we include the following definition before
+including @strong{all} the header files:
+
+@example
+#define _POSIX_C_SOURCE         200809L
+@end example
+
+We need to remember that, before using the library, we must call:
+
+@example
+ccstr_init();
+@end example
+
+@noindent
+to initialise some internal data structures.
 
 @menu
 * overview linking::            Linking code with the library.
@@ -214,6 +234,157 @@ number.
 @deftypefun int ccstr_version_interface_age (void)
 Return an integer representing the library interface current age.
 @end deftypefun
+
+@c page
+@node init
+@chapter Library initialisation
+
+
+@deftypefun void ccstr_init (void)
+Initialise the internal structures of the library.  It is fine to call this function multiple times.
+
+@quotation
+@strong{NOTE} This function is defined with the @gcc{} attribute @code{constructor}, so, when the
+library is built with @gcc{}: it will be called automatically by the library initialisation code.
+@end quotation
+@end deftypefun
+
+@c page
+@node conditions
+@chapter Condition objects
+
+
+@value{PACKAGE} uses the external library CCExceptions to signal exceptional conditions and errors
+through non--local exits; @xref{Top, CCExceptions, CCExceptions, ccexceptions, CCExceptions}.
+
+The functions will raise exceptional conditions with @cfunc{cce_raise} and expect the caller to
+intercept them using the @code{cce_location_t} mechanics.  The basic code template is:
+
+@example
+cce_location_t  L[1];
+
+if (cce_location(L)) @{
+  /* Handle errors here. */
+  cce_run_error_handlers_final(L);
+@} else @{
+  /* Do something useful here. */
+  cce_run_cleanup_handlers(L);
+@}
+@end example
+
+@menu
+* conditions base::             Base exceptional conditions.
+* conditions size overflow::    Size overflow exceptional conditions.
+@end menu
+
+@c page
+@node conditions base
+@section Base exceptional conditions
+
+
+@cindex Base exceptional condition
+@cindex Exceptional conditions, base
+
+
+@deftp {Struct Typedef} ccstr_descriptor_base_t
+Type of data structure representing the base exceptional--condition descriptor for all the
+conditions defined by @value{PACKAGE}.  It has the following public fields:
+
+@table @code
+@item cce_descriptor_t descriptor
+The condition descriptor's base values.
+@end table
+
+The parent of this type descriptor is the root type descriptor defined by the CCExceptions library;
+@xref{conditions root, CCExceptions, CCExceptions, ccexceptions, CCExceptions}.
+@end deftp
+
+
+@deftypevr {Dynamic Constant} {ccstr_descriptor_base_t const * const} ccstr_descriptor_base
+Pointer to the statically allocated exceptional--condition descriptor representing the base
+descriptor for all the conditions defined by @value{PACKAGE}.
+@end deftypevr
+
+
+@deftypefun bool ccstr_condition_is_base (cce_condition_t const * @var{C})
+Return @true{} if @var{C} is of type @objtype{ccstr_descriptor_base_t}; otherwise return @false{}.
+@end deftypefun
+
+@c page
+@node conditions size overflow
+@section Size overflow exceptional conditions
+
+
+@cindex Size overflow, exceptional condition
+@cindex Exceptional conditions, size overflow
+
+
+@deftp {Struct Typedef} ccstr_descriptor_buffer_size_overflow_t
+Type of data structure representing the exceptional--condition descriptor for the ``buffer size
+overflow'' errors; this exception type is used whenever we attempt to allocate too much memory for a
+buffer @objtype{ccstr_buffer_t}.  It has the following public fields:
+
+@table @code
+@item cce_descriptor_t descriptor
+The condition descriptor's base values.
+@end table
+
+The parent of this type descriptor is the one referenced by @code{ccstr_descriptor_base}.
+@end deftp
+
+
+@deftp {Struct Typedef} ccstr_condition_buffer_size_overflow_t
+Type of data structure representing an exceptional--condition object for a ``buffer size overflow''
+error.  It has the following public fields:
+
+@table @code
+@item ccstr_buffer_t * buffer
+Pointer to the buffer.
+
+@item size_t required_len
+The number of free bytes that were requested in the buffer.
+@end table
+@end deftp
+
+
+@deftypevr {Dynamic Constant} {ccstr_descriptor_buffer_size_overflow_t const * const} ccstr_descriptor_buffer_size_overflow
+Pointer to the statically allocated exceptional--condition descriptor.
+@end deftypevr
+
+
+@deftypefun {cce_condition_t const *} ccstr_condition_new_buffer_size_overflow (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{required_len})
+Allocate and initialise a new condition object.  If an error occurs allocating the structure: an
+exception is raised by performing a non--local exit to @var{L}.
+@end deftypefun
+
+
+@deftypefun void ccstr_condition_init_buffer_size_overflow (ccstr_condition_buffer_size_overflow_t * @var{C}, ccstr_buffer_t * @var{B}, size_t @var{required_len})
+Initialise an already allocated condition object.
+@end deftypefun
+
+
+@deftypefun bool ccstr_condition_is_buffer_size_overflow (cce_condition_t const * @var{C})
+Return @true{} if @var{C} if of type @code{ccstr_descriptor_buffer_size_overflow}; otherwise return
+@false{}.
+@end deftypefun
+
+
+To catch this exceptional condition we can do:
+
+@smallexample
+cce_location_t        L[1];
+
+if (cce_location(L)) @{
+  if (ccstr_condition_is_buffer_size_overflow(cce_condition(L))) @{
+    CCE_PC(ccstr_condition_buffer_size_overflow_t, C, cce_condition(L));
+    do_something_with(C);
+  @}
+  cce_run_error_handlers_final(L);
+@} else @{
+  do_something(L);
+  cce_run_cleanup_handlers(L);
+@}
+@end smallexample
 
 @c page
 @node buffers

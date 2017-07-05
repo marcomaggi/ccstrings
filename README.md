@@ -117,6 +117,25 @@ $ make install
 
 Read the documentation.
 
+*IMPORTANT*  To use  the library  we must  enable the  appropriate POSIX
+features when including the standard header files; so either: we include
+`ccexceptions.h` as first  header, or we include  `ccstrings.h` as first
+header, or  we include the  following definition before  including *all*
+the header files:
+
+```C
+#define _POSIX_C_SOURCE 200809L
+```
+
+*IMPORTANT* We need to remember that,  before using the library, we must
+call:
+
+```C
+ccstr_init();
+```
+
+to initialise some internal data structures.
+
 
 ## Credits
 

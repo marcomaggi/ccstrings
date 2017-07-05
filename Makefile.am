@@ -41,6 +41,7 @@ libccstrings_la_SOURCES= \
 	src/ccstrings.h			\
 	src/ccstrings-internals.h	\
 	src/ccstrings-version.c		\
+	src/ccstrings-conditions.c	\
 	src/ccstrings-buffer.c
 
 #page
