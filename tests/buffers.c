@@ -89,8 +89,11 @@ test_buffer_format (void)
     ccstr_buffer_init(L, B, 123);
     ccstr_cleanup_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao\n");
-    if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
-    assert(0 == strcmp(ccstr_buffer_output(B), "ciao\n"));
+    if (0) {
+      ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
+      fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
+    }
+    assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao\n"));
     cce_run_cleanup_handlers(L);
   }
   assert(false == error_flag);
@@ -114,8 +117,11 @@ test_buffer_format_realloc (void)
     ccstr_buffer_init(L, B, 1);
     ccstr_cleanup_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao %d %d %d\n", 1, 2, 3);
-    if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
-    assert(0 == strcmp(ccstr_buffer_output(B), "ciao 1 2 3\n"));
+    if (0) {
+      ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
+      fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
+    }
+    assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao 1 2 3\n"));
     cce_run_cleanup_handlers(L);
   }
   assert(false == error_flag);
@@ -139,8 +145,11 @@ test_buffer_format_multiple (void)
     ccstr_cleanup_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao");
     ccstr_buffer_format(L, B, " mamma\n");
-    if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
-    assert(0 == strcmp(ccstr_buffer_output(B), "ciao mamma\n"));
+    if (0) {
+      ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
+      fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
+    }
+    assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao mamma\n"));
     cce_run_cleanup_handlers(L);
   }
   assert(false == error_flag);
@@ -165,8 +174,11 @@ test_buffer_format_multiple_realloc (void)
     ccstr_cleanup_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao ");
     ccstr_buffer_format(L, B, "mamma\n");
-    if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
-    assert(0 == strcmp(ccstr_buffer_output(B), "ciao mamma\n"));
+    if (0) {
+      ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
+      fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
+    }
+    assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao mamma\n"));
     cce_run_cleanup_handlers(L);
   }
   assert(false == error_flag);
@@ -190,9 +202,12 @@ test_buffer_format_to_stream (void)
     ccstr_cleanup_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao ");
     ccstr_buffer_format(L, B, "mamma\n");
-    if (0) { fprintf(stderr, "%s: \"%s\"\n", __func__, ccstr_buffer_output(B)); }
+    if (0) {
+      ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
+      fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
+    }
     ccstr_buffer_fwrite(L, B, stdout);
-    assert(0 == strcmp(ccstr_buffer_output(B), "ciao mamma\n"));
+    assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao mamma\n"));
     cce_run_cleanup_handlers(L);
   }
   assert(false == error_flag);
@@ -202,6 +217,7 @@ test_buffer_format_to_stream (void)
 int
 main (int argc CCSTR_UNUSED, const char *const argv[] CCSTR_UNUSED)
 {
+  ccstr_init();
   if (1) { test_buffer_allocation(); }
   if (1) { test_buffer_handler(); }
   if (1) { test_buffer_format(); }

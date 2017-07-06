@@ -149,9 +149,9 @@ ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * templa
     va_list	ap;
     va_start(ap, template);
     {
-      size_t	pre_output_size = ccstr_buffer_output_size(B);
-      required_len = vsnprintf(ccstr_buffer_output_target(B), pre_output_size, template, ap);
-      if (pre_output_size > required_len) {
+      ccstr_ascii_t	block = ccstr_buffer_target_ascii(B);
+      required_len = vsnprintf(block.ptr, block.len, template, ap);
+      if (block.len > required_len) {
 	/* Success! */
 	B->bufoff += required_len;
       } else {
@@ -172,10 +172,10 @@ ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * templa
     va_list	ap;
     va_start(ap, template);
     {
-      size_t	pre_output_size = ccstr_buffer_output_size(B);
-      required_len = vsnprintf(ccstr_buffer_output_target(B), pre_output_size, template, ap);
+      ccstr_ascii_t	block = ccstr_buffer_target_ascii(B);
+      required_len = vsnprintf(block.ptr, block.len, template, ap);
       B->bufoff += required_len;
-      assert(pre_output_size > required_len);
+      assert(block.len > required_len);
     }
     va_end(ap);
   }
@@ -191,9 +191,9 @@ ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, const char * templ
     va_list	aq;
     va_copy(aq, ap);
     {
-      size_t	pre_output_size = ccstr_buffer_output_size(B);
-      required_len = vsnprintf(ccstr_buffer_output_target(B), pre_output_size, template, aq);
-      if (pre_output_size > required_len) {
+      ccstr_ascii_t	block = ccstr_buffer_target_ascii(B);
+      required_len = vsnprintf(block.ptr, block.len, template, aq);
+      if (block.len > required_len) {
 	/* Success! */
 	B->bufoff += required_len;
       } else {
@@ -214,10 +214,10 @@ ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, const char * templ
     va_list	aq;
     va_copy(aq, ap);
     {
-      size_t	pre_output_size = ccstr_buffer_output_size(B);
-      required_len = vsnprintf(ccstr_buffer_output_target(B), pre_output_size, template, aq);
+      ccstr_ascii_t	block = ccstr_buffer_target_ascii(B);
+      required_len = vsnprintf(block.ptr, block.len, template, aq);
       B->bufoff += required_len;
-      assert(pre_output_size > required_len);
+      assert(block.len > required_len);
     }
     va_end(aq);
   }
@@ -237,6 +237,30 @@ ccstr_buffer_fwrite (cce_location_t * L, ccstr_buffer_t * B, FILE * stream)
   errno = 0;
   rv = fwrite(B->bufptr, 1, count, stream);
   if (count != rv) {
+    cce_raise(L, cce_condition_new_errno_clear());
+  }
+}
+
+void
+ccstr_buffer_write (cce_location_t * L, ccstr_buffer_t * B, int filedes)
+{
+  const ssize_t	count = (ssize_t)B->bufoff;
+  ssize_t	rv;
+
+ doit:
+  errno = 0;
+  rv = write(filedes, B->bufptr, count);
+  if (count == rv) {
+    /* Success. */
+    return;
+  } else if (0 <= rv) {
+    /* Successfull call, but not all the data was writeen. */
+    cce_raise(L, ccstr_condition_new_buffer_output_incomplete(L, B, (size_t)rv));
+  } else if (EINTR == errno) {
+    /* The call was interrupted by a signal.  Try again. */
+    goto doit;
+  } else {
+    /* An error occurred. */
     cce_raise(L, cce_condition_new_errno_clear());
   }
 }

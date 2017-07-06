@@ -147,6 +147,72 @@ ccstr_condition_is_buffer_size_overflow (const cce_condition_t * C)
 
 
 /** --------------------------------------------------------------------
+ ** Condition object: size overflow.
+ ** ----------------------------------------------------------------- */
+
+static void condition_delete_buffer_output_incomplete  (cce_condition_t * C);
+static void condition_final_buffer_output_incomplete (cce_condition_t * C);
+static const char * condition_static_message_buffer_output_incomplete (const cce_condition_t * C);
+
+/* Instance of condition descriptor.   The "parent" field is initialised
+   to  NULL   here  and  reinitialised   to  the  "root"  later   by  an
+   initialisation function. */
+static ccstr_descriptor_buffer_output_incomplete_t descriptor_buffer_output_incomplete = {
+  .descriptor.parent            = &descriptor_base.descriptor,
+  .descriptor.delete            = condition_delete_buffer_output_incomplete,
+  .descriptor.final             = condition_final_buffer_output_incomplete,
+  .descriptor.static_message    = condition_static_message_buffer_output_incomplete
+};
+
+const ccstr_descriptor_buffer_output_incomplete_t * const ccstr_descriptor_buffer_output_incomplete = &descriptor_buffer_output_incomplete;
+
+cce_condition_t *
+ccstr_condition_new_buffer_output_incomplete (cce_location_t * L, ccstr_buffer_t * B, size_t written_len)
+/* Allocate a condition object and initialise it. */
+{
+  ccstr_condition_buffer_output_incomplete_t *	C = cce_sys_malloc(L, sizeof(ccstr_condition_buffer_output_incomplete_t));
+  cce_condition_init((cce_condition_t *)C, &descriptor_buffer_output_incomplete.descriptor);
+  ccstr_condition_init_buffer_output_incomplete(C, B, written_len);
+  return (cce_condition_t *) C;
+}
+
+void
+condition_delete_buffer_output_incomplete (cce_condition_t * C)
+/* Release the condition object memory. */
+{
+  free(C);
+}
+
+void
+ccstr_condition_init_buffer_output_incomplete (ccstr_condition_buffer_output_incomplete_t * C, ccstr_buffer_t * B, size_t written_len)
+/* Initialise an already allocated condition object. */
+{
+  ccstr_condition_init_base(&(C->base));
+  C->buffer		= B;
+  C->written_len	= written_len;
+}
+
+void
+condition_final_buffer_output_incomplete (cce_condition_t * C CCE_UNUSED)
+/* Finalise a condition object; do not release memory. */
+{
+  return;
+}
+
+static const char *
+condition_static_message_buffer_output_incomplete (const cce_condition_t * C CCE_UNUSED)
+{
+  return "writing buffer data to output device";
+}
+
+bool
+ccstr_condition_is_buffer_output_incomplete (const cce_condition_t * C)
+{
+  return cce_is_condition(C, &descriptor_buffer_output_incomplete.descriptor);
+}
+
+
+/** --------------------------------------------------------------------
  ** Initialisation.
  ** ----------------------------------------------------------------- */
 

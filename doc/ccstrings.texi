@@ -127,6 +127,7 @@ included in the section entitled ``@gnu{} Free Documentation License''.
 * overview::                    Overview of the package.
 * version::                     Version functions.
 * init::                        Library initialisation.
+* typedefs::                    Some type definitions.
 * conditions::                  Condition objects.
 * buffers::                     Collecting output in buffers.
 
@@ -250,6 +251,37 @@ library is built with @gcc{}: it will be called automatically by the library ini
 @end deftypefun
 
 @c page
+@node typedefs
+@chapter Some type definitions
+
+
+@deftp {Struct Typedef} ccstr_block_t
+Type of data structures representing memory blocks.  It has the following fields:
+
+@table @code
+@item int8_t * ptr
+Pointer to the memory block.
+
+@item size_t len
+Number of bytes in the memory block.
+@end table
+@end deftp
+
+
+@deftp {Struct Typedef} ccstr_ascii_t
+Type of data structures representing an @ascii{} string, @strong{not} necessarily zero--terminated.
+It has the following fields:
+
+@table @code
+@item char * ptr
+Pointer to the memory block.
+
+@item size_t len
+Number of characters in the memory block.
+@end table
+@end deftp
+
+@c page
 @node conditions
 @chapter Condition objects
 
@@ -275,6 +307,7 @@ if (cce_location(L)) @{
 @menu
 * conditions base::             Base exceptional conditions.
 * conditions size overflow::    Size overflow exceptional conditions.
+* conditions incomplete output:: Incomplete output exceptional conditions.
 @end menu
 
 @c page
@@ -307,7 +340,7 @@ descriptor for all the conditions defined by @value{PACKAGE}.
 
 
 @deftypefun bool ccstr_condition_is_base (cce_condition_t const * @var{C})
-Return @true{} if @var{C} is of type @objtype{ccstr_descriptor_base_t}; otherwise return @false{}.
+Return @ctrue{} if @var{C} is of type @objtype{ccstr_descriptor_base_t}; otherwise return @cfalse{}.
 @end deftypefun
 
 @c page
@@ -364,8 +397,8 @@ Initialise an already allocated condition object.
 
 
 @deftypefun bool ccstr_condition_is_buffer_size_overflow (cce_condition_t const * @var{C})
-Return @true{} if @var{C} if of type @code{ccstr_descriptor_buffer_size_overflow}; otherwise return
-@false{}.
+Return @ctrue{} if @var{C} if of type @code{ccstr_descriptor_buffer_size_overflow}; otherwise return
+@cfalse{}.
 @end deftypefun
 
 
@@ -387,6 +420,82 @@ if (cce_location(L)) @{
 @end smallexample
 
 @c page
+@node conditions incomplete output
+@section Incomplete output exceptional conditions
+
+
+@cindex Incomplete output, exceptional condition
+@cindex Exceptional conditions, incomplete output
+
+
+@deftp {Struct Typedef} ccstr_descriptor_buffer_output_incomplete_t
+Type of data structure representing the exceptional--condition descriptor for the ``buffer
+incomplete output'' errors; this exception type is used whenever we attempt to write a buffer to an
+output device and only some data is written.  It has the following public fields:
+
+@table @code
+@item cce_descriptor_t descriptor
+The condition descriptor's base values.
+@end table
+
+The parent of this type descriptor is the one referenced by @code{ccstr_descriptor_base}.
+@end deftp
+
+
+@deftp {Struct Typedef} ccstr_condition_buffer_output_incomplete_t
+Type of data structure representing an exceptional--condition object for a ``buffer incomplete
+output error.  It has the following public fields:
+
+@table @code
+@item ccstr_buffer_t * buffer
+Pointer to the buffer.
+
+@item size_t written_len
+The number of bytes that were written to the device.
+@end table
+@end deftp
+
+
+@deftypevr {Dynamic Constant} {ccstr_descriptor_buffer_output_incomplete_t const * const} ccstr_descriptor_buffer_output_incomplete
+Pointer to the statically allocated exceptional--condition descriptor.
+@end deftypevr
+
+
+@deftypefun {cce_condition_t const *} ccstr_condition_new_buffer_output_incomplete (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{written_len})
+Allocate and initialise a new condition object.  If an error occurs allocating the structure: an
+exception is raised by performing a non--local exit to @var{L}.
+@end deftypefun
+
+
+@deftypefun void ccstr_condition_init_buffer_output_incomplete (ccstr_condition_buffer_output_incomplete_t * @var{C}, ccstr_buffer_t * @var{B}, size_t @var{written_len})
+Initialise an already allocated condition object.
+@end deftypefun
+
+
+@deftypefun bool ccstr_condition_is_buffer_output_incomplete (cce_condition_t const * @var{C})
+Return @ctrue{} if @var{C} if of type @code{ccstr_descriptor_buffer_output_incomplete}; otherwise
+return @cfalse{}.
+@end deftypefun
+
+
+To catch this exceptional condition we can do:
+
+@smallexample
+cce_location_t        L[1];
+
+if (cce_location(L)) @{
+  if (ccstr_condition_is_buffer_output_incomplete(cce_condition(L))) @{
+    CCE_PC(ccstr_condition_buffer_output_incomplete_t, C, cce_condition(L));
+    do_something_with(C);
+  @}
+  cce_run_error_handlers_final(L);
+@} else @{
+  do_something(L);
+  cce_run_cleanup_handlers(L);
+@}
+@end smallexample
+
+@c page
 @node buffers
 @chapter Collecting output in buffers
 
@@ -396,18 +505,16 @@ of memory that can be resized and to which we write with functions similar to th
 @cfunc{vsnprintf}.
 
 @menu
-* buffers intro::               Buffers introduction and examples.
 * buffers typedefs::            Buffer type definitions.
 * buffers format::              Formatting buffer contents.
 * buffers output::              Writing output to buffers.
-* buffers handlers::            Buffer finalisation with handlers.
 * buffers inspection::          Inspecting buffers.
 * buffers memory::              Buffers memory handlers.
 @end menu
 
 @c page
-@node buffers intro
-@section Buffers introduction and examples
+@node buffers typedefs
+@section Buffer type definitions
 
 
 A buffer can be initialised and finalised as follows:
@@ -448,14 +555,10 @@ if (cce_location(L)) @{
 @}
 @end example
 
-@c page
-@node buffers typedefs
-@section Buffer type definitions
-
-
 
 @deftp {Struct Typedef} ccstr_buffer_t
-Type of data structures representing output buffers.
+Type of data structures representing output buffers.  Internally, this structure holds a pointer to
+a block of memory holding the actual data; such memory is allocated with @cfunc{malloc}.
 @end deftp
 
 
@@ -472,15 +575,44 @@ fields.  The block of memory holding the structure itself is left untouched.
 @end deftypefun
 
 
+@deftypefun void ccstr_cleanup_handler_buffer_init (cce_location_t * @var{L}, cce_handler_t * @var{H}, ccstr_buffer_t * @var{B})
+Initialise the handler @var{H} to manage finalisation of the buffer @var{B}; register @var{H} as
+cleanup handler in the context of the location @var{L}.
+@end deftypefun
+
+
+@deftypefun void ccstr_error_handler_buffer_init (cce_location_t * @var{L}, cce_handler_t * @var{H}, ccstr_buffer_t * @var{B})
+Initialise the handler @var{H} to manage finalisation of the buffer @var{B}; register @var{H} as
+error handler in the context of the location @var{L}.
+@end deftypefun
+
 @c page
 @node buffers format
 @section Formatting buffer contents
 
 
+To format an @ascii{} string into a buffer, we do:
+
+@example
+cce_location_t  L[1];
+ccstr_buffer_t  B[1];
+cce_handler_t   B_H[1];
+
+if (cce_location(L)) @{
+  cce_run_error_handlers_final(L);
+@} else @{
+  ccstr_buffer_init(L, B, 123);
+  ccstr_cleanup_handler_buffer_init(L, B_H, B);
+  ccstr_buffer_format(L, "number=%d", 123);
+  cce_run_cleanup_handlers(L);
+@}
+@end example
+
+
 @deftypefun void ccstr_buffer_format (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, @dots{})
 Format a string and append it to the buffer.  If there is not enough free room in the buffer:
 reallocate it enlarging the size.  If an error occurs reallocating: perform a non--local exit by
-jumping to @var{L}.
+jumping to @var{L}; in this case @var{B} is left untouched and its contents are still valid.
 
 The buffer is formatted according to @var{template} and the given optional arguments.  The supported
 format is the same of the standard @cfunc{printf}.
@@ -513,24 +645,29 @@ print (cce_location_t * L, ccstr_buffer_t * B,
 
 
 @deftypefun void ccstr_buffer_fwrite (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, FILE * @var{stream})
-Write the buffer contents to @var{stream}.  If an error occurs: raise an exception by performing a
-non--local exit to @var{L}.
-@end deftypefun
-
-@c page
-@node buffers handlers
-@section Buffer finalisation with handlers
-
-
-@deftypefun void ccstr_cleanup_handler_buffer_init (cce_location_t * @var{L}, cce_handler_t * @var{H}, ccstr_buffer_t * @var{B})
-Initialise the handler @var{H} to manage finalisation of the buffer @var{B}; register @var{H} as
-cleanup handler in the context of the location @var{L}.
+Write the buffer contents to @var{stream}, using the system call @cfunc{fwrite}.  If an error
+occurs: raise an exception by performing a non--local exit to @var{L}.
 @end deftypefun
 
 
-@deftypefun void ccstr_error_handler_buffer_init (cce_location_t * @var{L}, cce_handler_t * @var{H}, ccstr_buffer_t * @var{B})
-Initialise the handler @var{H} to manage finalisation of the buffer @var{B}; register @var{H} as
-error handler in the context of the location @var{L}.
+@deftypefun void ccstr_buffer_write (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, int @var{filedes})
+Write the buffer contents to @var{filedes}, using the system call @cfunc{write}.
+
+@itemize
+@item
+If the system call completes successfully and all the data is written: return.
+
+@item
+If the system call completes successfully but not all the data is written: raise an exception by
+performing a non--local exit to @var{L}.
+
+@item
+If an error occurs and @code{errno} is set to @code{EINTR}: the function loops internally trying
+again to write data.
+
+@item
+If an error occurs: raise an exception by performing a non--local exit to @var{L}.
+@end itemize
 @end deftypefun
 
 @c page
@@ -538,27 +675,24 @@ error handler in the context of the location @var{L}.
 @section Inspecting buffers
 
 
-@deftypefun {char *} ccstr_buffer_output (ccstr_buffer_t * @var{B})
-Return a pointer to the first character in the buffer.  If @var{B} references an initialised buffer:
-the returned pointer is never @cnull{}.
-@end deftypefun
-
-
 @deftypefun bool ccstr_buffer_full_p (ccstr_buffer_t * @var{B})
-Return @true{} if the buffer is full; otherwise return @false{}.
+Return @ctrue{} if the buffer is full; otherwise return @cfalse{}.
 @end deftypefun
 
 
-@deftypefun {char *} ccstr_buffer_output_target (ccstr_buffer_t * @var{B})
-Return a pointer to the first free character in the buffer.  The return value of this function is
-meaningful only if a call to @cfunc{ccstr_buffer_full_p} applied to the same buffer returns
-@false{}.
+@deftypefun ccstr_block_t ccstr_buffer_output_block (ccstr_buffer_t * @var{B})
+@deftypefunx ccstr_ascii_t ccstr_buffer_output_ascii (ccstr_buffer_t * @var{B})
+Return a block representing the data in the buffer.  If @var{B} references an initialised buffer:
+the pointer in the block is never @cnull{}.
 @end deftypefun
 
 
-@deftypefun size_t ccstr_buffer_output_size (ccstr_buffer_t * @var{B})
-Return the number of bytes available in the buffer.  The return value of this function is meaningful
-only if a call to @cfunc{ccstr_buffer_full_p} applied to the same buffer returns @false{}.
+@deftypefun ccstr_block_t ccstr_buffer_target_block (ccstr_buffer_t * @var{B})
+@deftypefunx ccstr_ascii_t ccstr_buffer_target_ascii (ccstr_buffer_t * @var{B})
+Return a block representing the free room at the end of the buffer.  If @var{B} references an
+initialised buffer: the pointer in the block is never @cnull{}.  The return value of this function
+is meaningful only if a call to @cfunc{ccstr_buffer_full_p} applied to the same buffer returns
+@cfalse{}.
 @end deftypefun
 
 @c page
@@ -569,7 +703,7 @@ only if a call to @cfunc{ccstr_buffer_full_p} applied to the same buffer returns
 @deftypefun void ccstr_buffer_enlarge (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{required_len})
 Reallocate the buffer enlarging it so that it can hold more than @var{required_len} characters.  If
 an error occurs reallocating: perform a non--local exit by jumping to @var{L}; in this case the
-buffer is left untouched.
+buffer is left untouched and its contents are still valid.
 @end deftypefun
 
 @c page

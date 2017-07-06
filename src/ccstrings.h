@@ -123,6 +123,9 @@ ccstr_decl int		ccstr_version_interface_age	(void);
  ** Forward declarations.
  ** ----------------------------------------------------------------- */
 
+typedef struct ccstr_block_t			ccstr_block_t;
+typedef struct ccstr_ascii_t			ccstr_ascii_t;
+
 typedef struct ccstr_buffer_t			ccstr_buffer_t;
 
 typedef struct ccstr_descriptor_base_t		ccstr_descriptor_base_t;
@@ -131,6 +134,23 @@ typedef struct ccstr_condition_base_t		ccstr_condition_base_t;
 typedef struct ccstr_descriptor_buffer_size_overflow_t	ccstr_descriptor_buffer_size_overflow_t;
 typedef struct ccstr_condition_buffer_size_overflow_t	ccstr_condition_buffer_size_overflow_t;
 
+typedef struct ccstr_descriptor_buffer_output_incomplete_t	ccstr_descriptor_buffer_output_incomplete_t;
+typedef struct ccstr_condition_buffer_output_incomplete_t	ccstr_condition_buffer_output_incomplete_t;
+
+
+/** --------------------------------------------------------------------
+ ** Blocks handling.
+ ** ----------------------------------------------------------------- */
+
+struct ccstr_block_t {
+  int8_t *	ptr;
+  size_t	len;
+};
+
+struct ccstr_ascii_t {
+  char *	ptr;
+  size_t	len;
+};
 
 
 /** --------------------------------------------------------------------
@@ -139,7 +159,7 @@ typedef struct ccstr_condition_buffer_size_overflow_t	ccstr_condition_buffer_siz
 
 struct ccstr_buffer_t {
   /* Pointer to the output buffer. */
-  char *	bufptr;
+  int8_t *	bufptr;
 
   /* Number of bytes allocated for the output buffer. */
   size_t	buflen;
@@ -164,18 +184,11 @@ ccstr_decl void ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, co
 ccstr_decl void ccstr_buffer_fwrite (cce_location_t * L, ccstr_buffer_t * B, FILE * stream)
   __attribute__((nonnull(1,2,3)));
 
-ccstr_decl void ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_len)
+ccstr_decl void ccstr_buffer_write (cce_location_t * L, ccstr_buffer_t * B, int filedes)
   __attribute__((nonnull(1,2)));
 
-/* ------------------------------------------------------------------ */
-
-__attribute__((pure,nonnull(1),returns_nonnull,always_inline))
-static inline char *
-ccstr_buffer_output (ccstr_buffer_t * B)
-/* Return a pointer to the first character in the buffer.  */
-{
-  return B->bufptr;
-}
+ccstr_decl void ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_len)
+  __attribute__((nonnull(1,2)));
 
 __attribute__((pure,nonnull(1),always_inline))
 static inline bool
@@ -185,24 +198,60 @@ ccstr_buffer_full_p (ccstr_buffer_t * B)
   return (B->bufoff < B->buflen)? false : true;
 }
 
+/* ------------------------------------------------------------------ */
+
 __attribute__((pure,nonnull(1),always_inline))
-static inline char *
-ccstr_buffer_output_target (ccstr_buffer_t * B)
-/* Return a  pointer to  the first  free character  in the  buffer.  The
-   return  value of  this  function  is meaningful  only  if  a call  to
-   "ccstr_buffer_full_p()" applied to the same buffer returns false. */
+static inline ccstr_block_t
+ccstr_buffer_output_block (ccstr_buffer_t * B)
+/* Return a block representing the data in the buffer. */
 {
-  return (B->bufptr + B->bufoff);
+  ccstr_block_t	block = {
+    .ptr = B->bufptr,
+    .len = B->bufoff
+  };
+  return block;
 }
 
 __attribute__((pure,nonnull(1),always_inline))
-static inline size_t
-ccstr_buffer_output_size (ccstr_buffer_t * B)
-/* Return the number of bytes available in the buffer.  The return value
-   of   this    function   is   meaningful    only   if   a    call   to
+static inline ccstr_ascii_t
+ccstr_buffer_output_ascii (ccstr_buffer_t * B)
+/* Return a block representing the data in the buffer. */
+{
+  ccstr_ascii_t	block = {
+    .ptr = (char *)B->bufptr,
+    .len = B->bufoff
+  };
+  return block;
+}
+
+/* ------------------------------------------------------------------ */
+
+__attribute__((pure,nonnull(1),always_inline))
+static inline ccstr_block_t
+ccstr_buffer_target_block (ccstr_buffer_t * B)
+/* Return a block representing the free  room in the buffer.  The return
+   value   of  this   function  is   meaningful  only   if  a   call  to
    "ccstr_buffer_full_p()" applied to the same buffer returns false. */
 {
-  return (B->buflen - B->bufoff);
+  ccstr_block_t	block = {
+    .ptr = (B->bufptr + B->bufoff),
+    .len = (B->buflen - B->bufoff)
+  };
+  return block;
+}
+
+__attribute__((pure,nonnull(1),always_inline))
+static inline ccstr_ascii_t
+ccstr_buffer_target_ascii (ccstr_buffer_t * B)
+/* Return a block representing the free  room in the buffer.  The return
+   value   of  this   function  is   meaningful  only   if  a   call  to
+   "ccstr_buffer_full_p()" applied to the same buffer returns false. */
+{
+  ccstr_ascii_t	ascii = {
+    .ptr = (char *)(B->bufptr + B->bufoff),
+    .len = (B->buflen - B->bufoff)
+  };
+  return ascii;
 }
 
 
@@ -251,6 +300,25 @@ ccstr_decl const ccstr_descriptor_buffer_size_overflow_t * const ccstr_descripto
 ccstr_decl cce_condition_t * ccstr_condition_new_buffer_size_overflow (cce_location_t * L, ccstr_buffer_t * B, size_t required_len);
 ccstr_decl void ccstr_condition_init_buffer_size_overflow (ccstr_condition_buffer_size_overflow_t * C, ccstr_buffer_t * B, size_t required_len);
 ccstr_decl bool ccstr_condition_is_buffer_size_overflow (const cce_condition_t * C);
+
+/* ------------------------------------------------------------------ */
+
+struct ccstr_descriptor_buffer_output_incomplete_t {
+  cce_descriptor_t      descriptor;
+};
+
+struct ccstr_condition_buffer_output_incomplete_t {
+  ccstr_condition_base_t	base;
+  ccstr_buffer_t *		buffer;
+  size_t			written_len;
+};
+
+ccstr_decl const ccstr_descriptor_buffer_output_incomplete_t * const ccstr_descriptor_buffer_output_incomplete;
+
+ccstr_decl cce_condition_t * ccstr_condition_new_buffer_output_incomplete (cce_location_t * L, ccstr_buffer_t * B, size_t written_len);
+ccstr_decl void ccstr_condition_init_buffer_output_incomplete (ccstr_condition_buffer_output_incomplete_t * C,
+							       ccstr_buffer_t * B, size_t written_len);
+ccstr_decl bool ccstr_condition_is_buffer_output_incomplete (const cce_condition_t * C);
 
 
 /** --------------------------------------------------------------------
