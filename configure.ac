@@ -1,13 +1,15 @@
-dnl @configure_input@
-dnl
+# @configure_input@
+#
 
 AC_PREREQ([2.69])
-AC_INIT([CCStrings],[0.1.0-devel.0],
+MMUX_PKG_VERSIONS([0],[1],[0],[devel.0])
+AC_INIT([CCStrings],[MMUX_PACKAGE_VERSION],
   [marco.maggi-ipsu@poste.it],
-  [ccstrings],[http://marcomaggi.github.com/ccstrings])
-dnl This is the revision number of this configure.ac
+  [ccstrings],[https://github.com/marcomaggi/ccstrings])
+MMUX_INIT
+MMUX_LIBTOOL_LIBRARY_VERSIONS([ccstrings],1,0,0)
 AC_REVISION([0.1])
-AC_COPYRIGHT([Copyright (c) 2017 Marco Maggi <marco.maggi-ipsu@poste.it>
+AC_COPYRIGHT([Copyright (c) 2017, 2018 Marco Maggi <marco.maggi-ipsu@poste.it>
 
 This program is free software: you  can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by
@@ -28,7 +30,7 @@ AC_CONFIG_AUX_DIR([meta/autotools])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE([foreign dist-xz no-dist-gzip subdir-objects])
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 AM_MAINTAINER_MODE
 
 AM_PROG_AR
@@ -40,29 +42,15 @@ AC_PROG_MKDIR_P
 LT_PREREQ([2.4])
 LT_INIT
 
-dnl page
-#### libraries interface version
-
-AS_VAR_SET([SLACKSTUFF_PACKAGE_VERSION],[0.1d0.0])
-AC_SUBST([SLACKSTUFF_PACKAGE_VERSION])
-
-dnl This is the version stored in the pkg-config data file.
-AC_SUBST([CCSTRINGS_PKG_CONFIG_VERSION],[0.1])
-
-MM_LIBTOOL_LIBRARY_VERSIONS([ccstrings],1,0,0)
-
-dnl page
+
 #### basic system inspection
 
-AC_LANG([C])
-AC_PROG_CC_C99
+MMUX_CHECK_TARGET_OS
 
-AX_CHECK_COMPILE_FLAG([-std=c11],[],[AC_MSG_ERROR([*** Compiler does not support -std=c11])],[-pedantic])
-AX_CFLAGS="-std=c11"
-AC_SUBST(AX_CFLAGS)
+AC_LANG([C])
+MMUX_LANG_C11
 
 AM_PROG_AS
-AC_PROG_CC
 AM_PROG_CC_C_O
 AC_HEADER_STDC
 AC_HEADER_STDBOOL
@@ -74,7 +62,7 @@ AM_CONDITIONAL([WANT_GCC],[test "x$GCC" = xyes])
 
 AC_CACHE_SAVE
 
-dnl page
+
 #### checks for library functions
 
 AC_FUNC_MALLOC
@@ -83,44 +71,27 @@ AC_CHECK_FUNCS([memmove memset])
 
 AC_CACHE_SAVE
 
-dnl page
+
 #### external libraries
 
-PKG_CHECK_MODULES([CCEXCEPTIONS],[ccexceptions >= 0.6])
+MMUX_CHECK_PKG_CONFIG_MACROS
+PKG_CHECK_MODULES([CCEXCEPTIONS],[ccexceptions >= 0.8.0])
+PKG_CHECK_MODULES([CCMEMORY],[ccmemory >= 0.2.1])
+PKG_CHECK_MODULES([CCSTRUCTS],[ccstructs >= 0.1.0])
+PKG_CHECK_MODULES([CCTESTS],[cctests >= 0.3.0],,[AC_MSG_WARN([package CCTests not found])])
+
+AM_CONDITIONAL([MMUX_TESTING_ENABLED],[test -n "$CCTESTS_LIBS"])
 
 AC_CACHE_SAVE
 
-dnl page
-#### operating system specific configuration
-
-dnl case "$target_os" in
-dnl   *linux*)
-dnl     ;;
-dnl   *bsd*)
-dnl     ;;
-dnl   *cygwin*)
-dnl     ;;
-dnl   *darwin*)
-dnl     ccstrings_OS_DARWIN=yes
-dnl     ;;
-dnl esac
-dnl AM_CONDITIONAL([WANT_LINUX], [test "x$ccstrings_OS_LINUX"  = xyes])
-dnl AM_CONDITIONAL([WANT_BSD],   [test "x$ccstrings_OS_BSD"    = xyes])
-dnl AM_CONDITIONAL([WANT_CYGWIN],[test "x$ccstrings_OS_CYGWIN" = xyes])
-dnl AM_CONDITIONAL([WANT_DARWIN],[test "x$ccstrings_OS_DARWIN" = xyes])
-
-dnl page
+
 #### finish
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile]
    [meta/scripts/ccstrings.pc]
-   [meta/slackstuff/config]
    [meta/slackware/slack-desc])
+MMUX_OUTPUT
 AC_OUTPUT
 
 ### end of file
-# Local Variables:
-# mode: autoconf
-# page-delimiter: "^dnl page"
-# End:
