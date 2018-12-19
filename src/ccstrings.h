@@ -7,7 +7,7 @@
 
 
 
-  Copyright (C) 2017 Marco Maggi <marco.maggi-ipsu@poste.it>
+  Copyright (C) 2017, 2018 Marco Maggi <marco.maggi-ipsu@poste.it>
 
   This program is  free software: you can redistribute  it and/or modify
   it  under the  terms  of  the GNU  Lesser  General  Public License  as
@@ -60,22 +60,22 @@ extern "C" {
 #if defined _WIN32 || defined __CYGWIN__
 #  ifdef BUILDING_DLL
 #    ifdef __GNUC__
-#      define ccstr_decl		__attribute__((dllexport)) extern
+#      define ccstr_decl		__attribute__((__dllexport__)) extern
 #    else
-#      define ccstr_decl		__declspec(dllexport) extern
+#      define ccstr_decl		__declspec(__dllexport__) extern
 #    endif
 #  else
 #    ifdef __GNUC__
-#      define ccstr_decl		__attribute__((dllimport)) extern
+#      define ccstr_decl		__attribute__((__dllimport__)) extern
 #    else
-#      define ccstr_decl		__declspec(dllimport) extern
+#      define ccstr_decl		__declspec(__dllimport__) extern
 #    endif
 #  endif
 #  define ccstr_private_decl	extern
 #else
 #  if __GNUC__ >= 4
-#    define ccstr_decl		__attribute__((visibility ("default"))) extern
-#    define ccstr_private_decl	__attribute__((visibility ("hidden")))  extern
+#    define ccstr_decl		__attribute__((__visibility__("default"))) extern
+#    define ccstr_private_decl	__attribute__((__visibility__("hidden")))  extern
 #  else
 #    define ccstr_decl		extern
 #    define ccstr_private_decl	extern
@@ -88,10 +88,14 @@ extern "C" {
  ** ----------------------------------------------------------------- */
 
 #include <ccexceptions.h>
+#include <ccmemory.h>
+#include <ccstructs.h>
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 
 /** --------------------------------------------------------------------
@@ -106,7 +110,7 @@ extern "C" {
  ** ----------------------------------------------------------------- */
 
 ccstr_decl void ccstr_init (void)
-  __attribute__((constructor));
+  __attribute__((__constructor__));
 
 
 /** --------------------------------------------------------------------
@@ -127,6 +131,9 @@ typedef struct ccstr_block_t			ccstr_block_t;
 typedef struct ccstr_ascii_t			ccstr_ascii_t;
 
 typedef struct ccstr_buffer_t			ccstr_buffer_t;
+
+typedef struct ccstr_vtable_t			ccstr_vtable_t;
+typedef struct ccstr_t				ccstr_t;
 
 typedef struct ccstr_descriptor_base_t		ccstr_descriptor_base_t;
 typedef struct ccstr_condition_base_t		ccstr_condition_base_t;
@@ -174,6 +181,14 @@ ccstr_decl void ccstr_buffer_init (cce_location_t * L, ccstr_buffer_t * B, size_
 
 ccstr_decl void ccstr_buffer_final (ccstr_buffer_t * B)
   __attribute__((nonnull(1)));
+
+ccstr_decl void ccstr_clean_handler_buffer_init (cce_location_t * L, cce_clean_handler_t * H, ccstr_buffer_t * B)
+  __attribute__((nonnull(1,2,3)));
+
+ccstr_decl void ccstr_error_handler_buffer_init (cce_location_t * L, cce_error_handler_t * H, ccstr_buffer_t * B)
+  __attribute__((nonnull(1,2,3)));
+
+/* ------------------------------------------------------------------ */
 
 ccstr_decl void ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * template, ...)
   __attribute__((nonnull(1,2,3)));
@@ -256,14 +271,134 @@ ccstr_buffer_target_ascii (ccstr_buffer_t * B)
 
 
 /** --------------------------------------------------------------------
- ** Exceptions handlers.
+ ** Strings.
  ** ----------------------------------------------------------------- */
 
-ccstr_decl void ccstr_cleanup_handler_buffer_init (cce_location_t * L, cce_handler_t * H, ccstr_buffer_t * B)
+typedef void ccstr_final_t (ccstr_t * S);
+typedef ccstr_t * ccstr_alloc_t (cce_location_t * L, size_t num_of_wchars);
+typedef ccstr_t * ccstr_realloc_t (cce_location_t * L, ccstr_t * S, size_t new_num_of_wchars);
+typedef void ccstr_free_t (ccstr_t * S);
+
+struct ccstr_vtable_t {
+  ccstr_final_t *	final;
+  ccstr_alloc_t *	alloc;
+  ccstr_realloc_t *	realloc;
+  ccstr_free_t *	free;
+};
+
+struct ccstr_t {
+  ccstr_vtable_t const *vtable;
+  size_t		len;
+  wchar_t *		ptr;
+  wchar_t		data[];
+};
+
+ccstr_decl ccstr_vtable_t const * const ccstr_malloc_vtable;
+
+ccstr_decl ccstr_t * ccstr_new (cce_location_t * L, ccstr_vtable_t const * vtable, size_t num_of_wchars)
+  __attribute__((nonnull(1),returns_nonnull));
+
+ccstr_decl void ccstr_delete (ccstr_t * S)
+  __attribute__((nonnull(1)));
+
+ccstr_decl void ccstr_cleanup_handler_init (cce_location_t * L, cce_handler_t * H, ccstr_t * S)
   __attribute__((nonnull(1,2,3)));
 
-ccstr_decl void ccstr_error_handler_buffer_init (cce_location_t * L, cce_handler_t * H, ccstr_buffer_t * B)
+ccstr_decl void ccstr_error_handler_init (cce_location_t * L, cce_handler_t * H, ccstr_t * S)
   __attribute__((nonnull(1,2,3)));
+
+/* ------------------------------------------------------------------ */
+
+ccstr_decl ccstr_t * ccstr_new_from_static (cce_location_t * L, ccstr_vtable_t const * vtable, wchar_t const * str, size_t num_of_wchars)
+  __attribute__((nonnull(1,2,3),returns_nonnull));
+
+ccstr_decl ccstr_t * ccstr_new_from_staticz (cce_location_t * L, ccstr_vtable_t const * vtable, wchar_t const * str)
+  __attribute__((nonnull(1,2,3),returns_nonnull));
+
+/* ------------------------------------------------------------------ */
+
+ccstr_decl void ccstr_format (cce_location_t * L, ccstr_t * S, const char * template, ...)
+  __attribute__((nonnull(1,2,3)));
+
+ccstr_decl void ccstr_vformat (cce_location_t * L, ccstr_t * S, const char * template, va_list ap)
+  __attribute__((nonnull(1,2,3)));
+
+ccstr_decl void ccstr_fwrite (cce_location_t * L, ccstr_t * S, FILE * stream)
+  __attribute__((nonnull(1,2,3)));
+
+ccstr_decl void ccstr_write (cce_location_t * L, ccstr_t * S, int filedes)
+  __attribute__((nonnull(1,2)));
+
+ccstr_decl void ccstr_enlarge (cce_location_t * L, ccstr_t * S, size_t required_len)
+  __attribute__((nonnull(1,2)));
+
+#if 0
+
+__attribute__((pure,nonnull(1),always_inline))
+static inline bool
+ccstr_full_p (ccstr_t * S)
+/* Return true if the buffer is full. */
+{
+  return (S->bufoff < S->buflen)? false : true;
+}
+
+/* ------------------------------------------------------------------ */
+
+__attribute__((pure,nonnull(1),always_inline))
+static inline ccstr_block_t
+ccstr_output_block (ccstr_t * S)
+/* Return a block representing the data in the buffer. */
+{
+  ccstr_block_t	block = {
+    .ptr = S->bufptr,
+    .len = S->bufoff
+  };
+  return block;
+}
+
+__attribute__((pure,nonnull(1),always_inline))
+static inline ccstr_ascii_t
+ccstr_output_ascii (ccstr_t * S)
+/* Return a block representing the data in the buffer. */
+{
+  ccstr_ascii_t	block = {
+    .ptr = (char *)S->bufptr,
+    .len = S->bufoff
+  };
+  return block;
+}
+
+/* ------------------------------------------------------------------ */
+
+__attribute__((pure,nonnull(1),always_inline))
+static inline ccstr_block_t
+ccstr_target_block (ccstr_t * S)
+/* Return a block representing the free  room in the buffer.  The return
+   value   of  this   function  is   meaningful  only   if  a   call  to
+   "ccstr_full_p()" applied to the same buffer returns false. */
+{
+  ccstr_block_t	block = {
+    .ptr = (S->bufptr + S->bufoff),
+    .len = (S->buflen - S->bufoff)
+  };
+  return block;
+}
+
+__attribute__((pure,nonnull(1),always_inline))
+static inline ccstr_ascii_t
+ccstr_target_ascii (ccstr_t * S)
+/* Return a block representing the free  room in the buffer.  The return
+   value   of  this   function  is   meaningful  only   if  a   call  to
+   "ccstr_full_p()" applied to the same buffer returns false. */
+{
+  ccstr_ascii_t	ascii = {
+    .ptr = (char *)(S->bufptr + S->bufoff),
+    .len = (S->buflen - S->bufoff)
+  };
+  return ascii;
+}
+
+#endif
 
 
 /** --------------------------------------------------------------------

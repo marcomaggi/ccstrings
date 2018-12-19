@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS		= -I meta/autotools
 AUTOMAKE_OPTIONS	= foreign
-EXTRA_DIST		= INSTALL configure.sh		\
+EXTRA_DIST		= INSTALL			\
 			  meta/slackware/slack-desc.in
 dist_doc_DATA		= README COPYING
 AM_CFLAGS		= $(MMUX_CFLAGS) -I$(srcdir)/src -I$(builddir)/src
@@ -44,7 +44,8 @@ libccstrings_la_SOURCES= \
 	src/ccstrings-internals.h	\
 	src/ccstrings-version.c		\
 	src/ccstrings-conditions.c	\
-	src/ccstrings-buffer.c
+	src/ccstrings-buffer.c		\
+	src/ccstrings-strings.c
 
 
 #### tests

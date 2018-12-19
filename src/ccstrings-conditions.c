@@ -7,7 +7,7 @@
 
 
 
-  Copyright (C) 2017 Marco Maggi <marco.maggi-ipsu@poste.it>
+  Copyright (C) 2017, 2018 Marco Maggi <marco.maggi-ipsu@poste.it>
 
   This is free software; you  can redistribute it and/or modify it under
   the terms of the GNU Lesser General Public License as published by the
@@ -76,7 +76,7 @@ condition_static_message_base (const cce_condition_t * C CCSTR_UNUSED)
 bool
 ccstr_condition_is_base (const cce_condition_t * C)
 {
-  return cce_is_condition(C, &descriptor_base.descriptor);
+  return cce_condition_is(C, &descriptor_base.descriptor);
 }
 
 
@@ -142,7 +142,7 @@ condition_static_message_buffer_size_overflow (const cce_condition_t * C CCE_UNU
 bool
 ccstr_condition_is_buffer_size_overflow (const cce_condition_t * C)
 {
-  return cce_is_condition(C, &descriptor_buffer_size_overflow.descriptor);
+  return cce_condition_is(C, &descriptor_buffer_size_overflow.descriptor);
 }
 
 
@@ -208,7 +208,7 @@ condition_static_message_buffer_output_incomplete (const cce_condition_t * C CCE
 bool
 ccstr_condition_is_buffer_output_incomplete (const cce_condition_t * C)
 {
-  return cce_is_condition(C, &descriptor_buffer_output_incomplete.descriptor);
+  return cce_condition_is(C, &descriptor_buffer_output_incomplete.descriptor);
 }
 
 

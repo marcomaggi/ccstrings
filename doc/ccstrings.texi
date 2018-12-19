@@ -33,7 +33,7 @@
 
 @c To be used as @value{COPYRIGHT_YEARS} whenever we need to include the
 @c list of copyright years.
-@set COPYRIGHT_YEARS            2017
+@set COPYRIGHT_YEARS            2017, 2018
 
 @c To be used as @value{CCEXCEPTIONS_VERSION} whenever we need to include the required CCExceptions
 @c version.
@@ -297,10 +297,10 @@ cce_location_t  L[1];
 
 if (cce_location(L)) @{
   /* Handle errors here. */
-  cce_run_error_handlers_final(L);
+  cce_run_catch_handlers_final(L);
 @} else @{
   /* Do something useful here. */
-  cce_run_cleanup_handlers(L);
+  cce_run_body_handlers(L);
 @}
 @end example
 
@@ -412,10 +412,10 @@ if (cce_location(L)) @{
     CCE_PC(ccstr_condition_buffer_size_overflow_t, C, cce_condition(L));
     do_something_with(C);
   @}
-  cce_run_error_handlers_final(L);
+  cce_run_catch_handlers_final(L);
 @} else @{
   do_something(L);
-  cce_run_cleanup_handlers(L);
+  cce_run_body_handlers(L);
 @}
 @end smallexample
 
@@ -488,10 +488,10 @@ if (cce_location(L)) @{
     CCE_PC(ccstr_condition_buffer_output_incomplete_t, C, cce_condition(L));
     do_something_with(C);
   @}
-  cce_run_error_handlers_final(L);
+  cce_run_catch_handlers_final(L);
 @} else @{
   do_something(L);
-  cce_run_cleanup_handlers(L);
+  cce_run_body_handlers(L);
 @}
 @end smallexample
 
@@ -524,14 +524,14 @@ cce_location_t        L[1];
 ccstr_buffer_t        B[1];
 
 if (cce_location(L)) @{
-  cce_run_error_handlers_final(L);
+  cce_run_catch_handlers_final(L);
 @} else @{
   ccstr_buffer_init(L, B, 123);
   @{
     /* Do something with "B" here. */
   @}
   ccstr_buffer_final(B);
-  cce_run_cleanup_handlers(L);
+  cce_run_body_handlers(L);
 @}
 @end example
 
@@ -539,19 +539,19 @@ if (cce_location(L)) @{
 but it is more handy to use the predefined CCExceptions handler:
 
 @example
-cce_location_t  L[1];
-ccstr_buffer_t  B[1];
-cce_handler_t   B_H[1];
+cce_location_t          L[1];
+ccstr_buffer_t          B[1];
+cce_clean_handler_t     B_H[1];
 
 if (cce_location(L)) @{
-  cce_run_error_handlers_final(L);
+  cce_run_catch_handlers_final(L);
 @} else @{
   ccstr_buffer_init(L, B, 123);
-  ccstr_cleanup_handler_buffer_init(L, B_H, B);
+  ccstr_clean_handler_buffer_init(L, B_H, B);
   @{
     /* Do something with "B" here. */
   @}
-  cce_run_cleanup_handlers(L);
+  cce_run_body_handlers(L);
 @}
 @end example
 
@@ -575,13 +575,13 @@ fields.  The block of memory holding the structure itself is left untouched.
 @end deftypefun
 
 
-@deftypefun void ccstr_cleanup_handler_buffer_init (cce_location_t * @var{L}, cce_handler_t * @var{H}, ccstr_buffer_t * @var{B})
+@deftypefun void ccstr_clean_handler_buffer_init (cce_location_t * @var{L}, cce_clean_handler_t * @var{H}, ccstr_buffer_t * @var{B})
 Initialise the handler @var{H} to manage finalisation of the buffer @var{B}; register @var{H} as
-cleanup handler in the context of the location @var{L}.
+clean handler in the context of the location @var{L}.
 @end deftypefun
 
 
-@deftypefun void ccstr_error_handler_buffer_init (cce_location_t * @var{L}, cce_handler_t * @var{H}, ccstr_buffer_t * @var{B})
+@deftypefun void ccstr_error_handler_buffer_init (cce_location_t * @var{L}, cce_error_handler_t * @var{H}, ccstr_buffer_t * @var{B})
 Initialise the handler @var{H} to manage finalisation of the buffer @var{B}; register @var{H} as
 error handler in the context of the location @var{L}.
 @end deftypefun
@@ -599,12 +599,12 @@ ccstr_buffer_t  B[1];
 cce_handler_t   B_H[1];
 
 if (cce_location(L)) @{
-  cce_run_error_handlers_final(L);
+  cce_run_catch_handlers_final(L);
 @} else @{
   ccstr_buffer_init(L, B, 123);
-  ccstr_cleanup_handler_buffer_init(L, B_H, B);
+  ccstr_clean_handler_buffer_init(L, B_H, B);
   ccstr_buffer_format(L, "number=%d", 123);
-  cce_run_cleanup_handlers(L);
+  cce_run_body_handlers(L);
 @}
 @end example
 

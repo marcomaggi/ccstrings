@@ -1,13 +1,13 @@
 /*
   Part of: CCStr
-  Contents: handling of output buffer
-  Date: Fri Mar 17, 2017
+  Contents: handling of strings
+  Date: Jul  6, 2017
 
   Abstract
 
 
 
-  Copyright (C) 2017, 2018 Marco Maggi <marco.maggi-ipsu@poste.it>
+  Copyright (C) 2017 Marco Maggi <marco.maggi-ipsu@poste.it>
 
   This is free software; you  can redistribute it and/or modify it under
   the terms of the GNU Lesser General Public License as published by the
@@ -30,32 +30,101 @@
 #include <limits.h>
 #include <assert.h>
 #include <string.h>
-#include <errno.h>
+#include <wchar.h>
 
 
 /** --------------------------------------------------------------------
- ** Initialisation and finalisation.
+ ** Table of functions with malloc memory management.
  ** ----------------------------------------------------------------- */
 
-void
-ccstr_buffer_init (cce_location_t * L, ccstr_buffer_t * B, size_t initial_buflen)
-/* Initialise the buffer  structure.  Allocate memory for  the buffer at
-   the initial size of "initial_buflen".  If an error occurs allocating:
-   perform a non-local exit by jumping to L. */
+static void
+ccstr_malloc_table_final (ccstr_t * S)
 {
-  B->bufptr	= cce_sys_malloc(L, initial_buflen);
-  B->buflen	= initial_buflen;
-  B->bufoff	= 0;
-  memset(B->bufptr, 0, initial_buflen);
+  S->vtable->free(S);
+}
+
+static ccstr_t *
+ccstr_malloc_table_alloc (cce_location_t * L, size_t num_of_wchars)
+{
+  return cce_sys_malloc(L, sizeof(ccstr_t) + num_of_wchars);
+}
+
+static ccstr_t *
+ccstr_malloc_table_realloc (cce_location_t * L, ccstr_t * S, size_t new_num_of_wchars)
+{
+  return cce_sys_realloc(L, S, sizeof(ccstr_t) + new_num_of_wchars);
+}
+
+static void
+ccstr_malloc_table_free (ccstr_t * S)
+{
+  free(S);
+}
+
+static ccstr_vtable_t const ccstr_malloc_vtable_stru = {
+  .final	= ccstr_malloc_table_final,
+  .alloc	= ccstr_malloc_table_alloc,
+  .realloc	= ccstr_malloc_table_realloc,
+  .free		= ccstr_malloc_table_free
+};
+
+ccstr_vtable_t const * const ccstr_malloc_vtable = &ccstr_malloc_vtable_stru;
+
+
+/** --------------------------------------------------------------------
+ ** Basic construction and destruction.
+ ** ----------------------------------------------------------------- */
+
+ccstr_t *
+ccstr_new (cce_location_t * L, ccstr_vtable_t const * const vtable, size_t num_of_wchars)
+/* Build a new string structure.  Allocate  memory for the buffer at the
+   initial  size of  "num_of_wchars".   If an  error occurs  allocating:
+   perform a non-local exit by jumping to "L". */
+{
+  ccstr_t *	S = vtable->alloc(L, num_of_wchars);
+  S->vtable	= vtable;
+  S->len	= num_of_wchars;
+  S->ptr	= &(S->data[0]);
+  return S;
 }
 
 void
-ccstr_buffer_final (ccstr_buffer_t * B)
+ccstr_delete (ccstr_t * S)
+/* Call the  finalisation function registered  in "S".  After  this call
+   "S" is no more valid. */
 {
-  free(B->bufptr);
-  B->bufptr	= NULL;
-  B->buflen	= 0;
-  B->bufoff	= 0;
+  S->vtable->final(S);
+}
+
+
+/** --------------------------------------------------------------------
+ ** Other constructors.
+ ** ----------------------------------------------------------------- */
+
+ccstr_t *
+ccstr_new_from_static (cce_location_t * L, ccstr_vtable_t const * vtable, wchar_t const * str, size_t num_of_wchars)
+/* Initialise  a string  structure with  a statically-allocated  string.
+   Allocate memory for  the structure itself, but not for  the data.  If
+   an error occurs allocating: perform a non-local exit by jumping to L.
+   The pointer  "str" must reference  a memory  block of at  least "len"
+   characters. */
+{
+  ccstr_t *	S = vtable->alloc(L, num_of_wchars);
+  S->vtable	= vtable;
+  S->len	= num_of_wchars;
+  S->ptr	= str;
+  return S;
+}
+
+ccstr_t *
+ccstr_new_from_staticz (cce_location_t * L, ccstr_vtable_t const * vtable, wchar_t const * str)
+/* Initialise   a   string   structure  with   a   statically-allocated,
+   zero-terminated string.   Allocate memory  for the  structure itself,
+   but  not for  the data.   If an  error occurs  allocating: perform  a
+   non-local exit by  jumping to L.  The pointer "str"  must reference a
+   memory block holding a zero-terminated string. */
+{
+  return ccstr_new_from_static(L, vtable, str, wcslen(str));
 }
 
 
@@ -63,6 +132,7 @@ ccstr_buffer_final (ccstr_buffer_t * B)
  ** Predefined CCExceptions handler: buffer.
  ** ----------------------------------------------------------------- */
 
+#if 0
 __attribute__((nonnull(1,2)))
 static void
 ccstr_handler_buffer_function (const cce_condition_t * C CCE_UNUSED, cce_handler_t * H)
@@ -72,25 +142,28 @@ ccstr_handler_buffer_function (const cce_condition_t * C CCE_UNUSED, cce_handler
 }
 
 void
-ccstr_clean_handler_buffer_init (cce_location_t * L, cce_clean_handler_t * H, ccstr_buffer_t * B)
+ccstr_cleanup_handler_buffer_init (cce_location_t * L, cce_handler_t * H, ccstr_buffer_t * B)
 {
-  H->handler.function	= ccstr_handler_buffer_function;
-  H->handler.pointer	= B;
-  cce_register_clean_handler(L, H);
+  H->function	= ccstr_handler_buffer_function;
+  H->pointer	= B;
+  cce_register_cleanup_handler(L, H);
 }
 
 void
-ccstr_error_handler_buffer_init (cce_location_t * L, cce_error_handler_t * H, ccstr_buffer_t * B)
+ccstr_error_handler_buffer_init (cce_location_t * L, cce_handler_t * H, ccstr_buffer_t * B)
 {
-  H->handler.function	= ccstr_handler_buffer_function;
-  H->handler.pointer	= B;
+  H->function	= ccstr_handler_buffer_function;
+  H->pointer	= B;
   cce_register_error_handler(L, H);
 }
+#endif
 
 
 /** --------------------------------------------------------------------
  ** Memory management.
  ** ----------------------------------------------------------------- */
+
+#if 0
 
 void
 ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_len)
@@ -135,11 +208,14 @@ ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_le
   B->buflen	= new_buflen;
 }
 
+#endif
+
 
 /** --------------------------------------------------------------------
  ** Formatting buffer contents.
  ** ----------------------------------------------------------------- */
 
+#if 0
 void
 ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * template, ...)
 {
@@ -224,10 +300,14 @@ ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, const char * templ
   }
 }
 
+#endif
+
 
 /** --------------------------------------------------------------------
  ** Writing output.
  ** ----------------------------------------------------------------- */
+
+#if 0
 
 void
 ccstr_buffer_fwrite (cce_location_t * L, ccstr_buffer_t * B, FILE * stream)
@@ -265,5 +345,7 @@ ccstr_buffer_write (cce_location_t * L, ccstr_buffer_t * B, int filedes)
     cce_raise(L, cce_condition_new_errno_clear());
   }
 }
+
+#endif
 
 /* end of file */

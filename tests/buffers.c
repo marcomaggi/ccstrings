@@ -7,7 +7,7 @@
 
 
 
-  Copyright (C) 2017 Marco Maggi <marco.maggi-ipsu@poste.it>
+  Copyright (C) 2017, 2018 Marco Maggi <marco.maggi-ipsu@poste.it>
 
   This is free software; you  can redistribute it and/or modify it under
   the terms of the GNU Lesser General Public License as published by the
@@ -41,12 +41,12 @@ test_buffer_allocation (void)
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
-    cce_run_error_handlers_final(L);
+    cce_run_catch_handlers_final(L);
     error_flag = true;
   } else {
     ccstr_buffer_init(L, B, 123);
     ccstr_buffer_final(B);
-    cce_run_cleanup_handlers(L);
+    cce_run_body_handlers(L);
   }
   assert(false == error_flag);
 }
@@ -58,16 +58,16 @@ test_buffer_handler (void)
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
-  cce_handler_t		B_H[1];
+  cce_clean_handler_t	B_H[1];
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
-    cce_run_error_handlers_final(L);
+    cce_run_catch_handlers_final(L);
     error_flag = true;
   } else {
     ccstr_buffer_init(L, B, 123);
-    ccstr_cleanup_handler_buffer_init(L, B_H, B);
-    cce_run_cleanup_handlers(L);
+    ccstr_clean_handler_buffer_init(L, B_H, B);
+    cce_run_body_handlers(L);
   }
   assert(false == error_flag);
 }
@@ -79,22 +79,22 @@ test_buffer_format (void)
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
-  cce_handler_t		B_H[1];
+  cce_clean_handler_t	B_H[1];
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
-    cce_run_error_handlers_final(L);
+    cce_run_catch_handlers_final(L);
     error_flag = true;
   } else {
     ccstr_buffer_init(L, B, 123);
-    ccstr_cleanup_handler_buffer_init(L, B_H, B);
+    ccstr_clean_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao\n");
     if (0) {
       ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
       fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
     }
     assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao\n"));
-    cce_run_cleanup_handlers(L);
+    cce_run_body_handlers(L);
   }
   assert(false == error_flag);
 }
@@ -107,22 +107,22 @@ test_buffer_format_realloc (void)
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
-  cce_handler_t		B_H[1];
+  cce_clean_handler_t	B_H[1];
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
-    cce_run_error_handlers_final(L);
+    cce_run_catch_handlers_final(L);
     error_flag = true;
   } else {
     ccstr_buffer_init(L, B, 1);
-    ccstr_cleanup_handler_buffer_init(L, B_H, B);
+    ccstr_clean_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao %d %d %d\n", 1, 2, 3);
     if (0) {
       ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
       fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
     }
     assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao 1 2 3\n"));
-    cce_run_cleanup_handlers(L);
+    cce_run_body_handlers(L);
   }
   assert(false == error_flag);
 }
@@ -134,15 +134,15 @@ test_buffer_format_multiple (void)
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
-  cce_handler_t		B_H[1];
+  cce_clean_handler_t	B_H[1];
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
-    cce_run_error_handlers_final(L);
+    cce_run_catch_handlers_final(L);
     error_flag = true;
   } else {
     ccstr_buffer_init(L, B, 123);
-    ccstr_cleanup_handler_buffer_init(L, B_H, B);
+    ccstr_clean_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao");
     ccstr_buffer_format(L, B, " mamma\n");
     if (0) {
@@ -150,7 +150,7 @@ test_buffer_format_multiple (void)
       fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
     }
     assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao mamma\n"));
-    cce_run_cleanup_handlers(L);
+    cce_run_body_handlers(L);
   }
   assert(false == error_flag);
 }
@@ -163,15 +163,15 @@ test_buffer_format_multiple_realloc (void)
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
-  cce_handler_t		B_H[1];
+  cce_clean_handler_t	B_H[1];
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
-    cce_run_error_handlers_final(L);
+    cce_run_catch_handlers_final(L);
     error_flag = true;
   } else {
     ccstr_buffer_init(L, B, 1);
-    ccstr_cleanup_handler_buffer_init(L, B_H, B);
+    ccstr_clean_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao ");
     ccstr_buffer_format(L, B, "mamma\n");
     if (0) {
@@ -179,7 +179,7 @@ test_buffer_format_multiple_realloc (void)
       fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
     }
     assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao mamma\n"));
-    cce_run_cleanup_handlers(L);
+    cce_run_body_handlers(L);
   }
   assert(false == error_flag);
 }
@@ -191,15 +191,15 @@ test_buffer_format_to_stream (void)
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
-  cce_handler_t		B_H[1];
+  cce_clean_handler_t	B_H[1];
   volatile bool		error_flag = false;
 
   if (cce_location(L)) {
-    cce_run_error_handlers_final(L);
+    cce_run_catch_handlers_final(L);
     error_flag = true;
   } else {
     ccstr_buffer_init(L, B, 1);
-    ccstr_cleanup_handler_buffer_init(L, B_H, B);
+    ccstr_clean_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao ");
     ccstr_buffer_format(L, B, "mamma\n");
     if (0) {
@@ -208,7 +208,7 @@ test_buffer_format_to_stream (void)
     }
     ccstr_buffer_fwrite(L, B, stdout);
     assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao mamma\n"));
-    cce_run_cleanup_handlers(L);
+    cce_run_body_handlers(L);
   }
   assert(false == error_flag);
 }
