@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/marcomaggi/ccstrings.svg?branch=master)](https://travis-ci.org/marcomaggi/ccstrings)
 [![codecov](https://codecov.io/gh/marcomaggi/ccstrings/branch/master/graph/badge.svg)](https://codecov.io/gh/marcomaggi/ccstrings)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b07b27b019014a2198d498e2e623ad5a)](https://www.codacy.com/app/marcomaggi/ccstrings?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=marcomaggi/ccstrings&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge]()](https://www.codacy.com/app/marcomaggi/ccstrings?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=marcomaggi/ccstrings&amp;utm_campaign=Badge_Grade)
 
 
 ## Introduction
