@@ -21,17 +21,23 @@ Topics
 ---------------
 
 This package installs a C11  language library implementing custom string
-structures.  This package depends on  the package CCExceptions, at least
-version 0.6.
+structures.
 
-  The package  makes use  of the  GNU Autotools  and it  is tested  on a
-GNU+Linux system.
+  The  library  targets POSIX  systems.   This  package depends  on  the
+packages:  CCExceptions,  at least  version  0.8.0;  CCMemory, at  least
+version  0.2.1; CCStructs,  at least  version  0.1.0.  To  run the  test
+suite: this package  depends upon the package CCTests,  at least version
+0.3.0.
+
+  The package uses the GNU Autotools  and it is tested, using Travis CI,
+on both Ubuntu  GNU+Linux systems and OS X systems.   The package relies
+on "pkg-config" to find the dependencies installed on the system.
 
 
 2. License
 ----------
 
-Copyright (c) 2017 Marco Maggi
+Copyright (c) 2017, 2018 Marco Maggi
 <marco.maggi-ipsu@poste.it>
 
 This program is free software: you  can redistribute it and/or modify it
@@ -51,8 +57,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 3. Install
 ----------
 
-First  we must  make  sure  that the  package  CCExceptions is  properly
-installed.  To install from a proper release tarball, do this:
+To install from a proper release tarball, do this:
 
     $ cd ccstrings-0.1.0
     $ mkdir build
@@ -63,7 +68,7 @@ installed.  To install from a proper release tarball, do this:
     $ make install
 
 to inspect the available configuration options:
-
+b
     $ ../configure --help
 
   The Makefile is designed to allow parallel builds, so we can do:
@@ -114,22 +119,12 @@ proper release tarball, but we have to enable maintainer mode:
 4. Usage
 --------
 
-Read the documentation.
+Read the documentation generated from  the Texinfo sources.  The package
+installs the documentation  in Info format; we can  generate and install
+documentation in HTML format by running:
 
-*IMPORTANT*  To use  the library  we must  enable the  appropriate POSIX
-features when including the standard header files; so either: we include
-"ccexceptions.h" as first  header, or we include  "ccstrings.h" as first
-header, or  we include the  following definition before  including *all*
-the header files:
-
-   #define _POSIX_C_SOURCE	200809L
-
-*IMPORTANT* We need to remember that,  before using the library, we must
-call:
-
-   ccstr_init();
-
-to initialise some internal data structures.
+   $ make html
+   $ make install-html
 
 
 A. Credits
@@ -153,7 +148,7 @@ C. Resources
 
 The latest release of this package can be downloaded from:
 
-	<https://bitbucket.org/marcomaggi/ccstrings/downloads>
+	 <https://bitbucket.org/marcomaggi/ccstrings/downloads>
 
 development takes place at:
 
@@ -171,52 +166,40 @@ the GNU Project software can be found here:
 
 			 <https://www.gnu.org/>
 
-the package CCExceptions can be found here:
+the package CCExceptions is available at:
 
 	     <https://github.com/marcomaggi/ccexceptions/>
+
+the package CCMemory is available at:
+
+	     <https://github.com/marcomaggi/ccmemory/>
+
+the package CCStructs is available at:
+
+	     <https://github.com/marcomaggi/ccstructs/>
+
+the package CCTests is available at:
+
+		<https://github.com/marcomaggi/cctests/>
 
 
 D. Badges and static analysis
 -----------------------------
 
-D.1 CII Best Practices
-----------------------
-
-The  Linux  Foundation's  Core   Infrastructure  Initiative  (CII)  Best
-Practices badge is a way for Free/Libre and Open Source Software (FLOSS)
-projects to show that they follow  best practices.  We can find the self
-certification at:
-
-      <https://bestpractices.coreinfrastructure.org/projects/XXX/>
-
-
-D.2 Travis CI
+D.1 Travis CI
 -------------
 
 Travis CI is  a hosted, distributed continuous  integration service used
 to build and test software projects  hosted at GitHub.  We can find this
 project's dashboard at:
 
-	      <https://travis-ci.org/marcomaggi/ccstrings>
+	     <https://travis-ci.org/marcomaggi/ccstrings>
 
   Usage of this service is configured through the file ".travis.yml" and
 the scripts under the directory "meta/travis-ci".
 
 
-D.3 Coverity Scan
------------------
-
-Coverity Scan is  a service providing the results of  static analysis on
-open source coding projects.  We can find this project's dashboard at:
-
-       <https://scan.coverity.com/projects/marcomaggi-ccstrings>
-
-  Usage of this service is implemented with make rules; see the relevant
-section in the file "Makefile.am".  To access the service a unique token
-is needed: this token is private and is owned by the current maintainer.
-
-
-D.4 Clang's Static Analyzer
+D.2 Clang's Static Analyzer
 ---------------------------
 
 The Clang Static Analyzer is a source code analysis tool that finds bugs
@@ -229,17 +212,29 @@ and we can find it at:
 section in the file "Makefile.am".
 
 
-D.5 Codecov
+D.3 Codecov
 -----------
 
 Codecov is a service providing code  coverage reports.  We can find this
 project's dashboard at:
 
-	      <https://codecov.io/gh/marcomaggi/ccstrings>
+	     <https://codecov.io/gh/marcomaggi/ccstrings>
 
 Usage of  this service is  implemented through direct  interface between
-GitHub and Codecov  sites; it configured through  the file "codecov.yml"
+GitHub and Codecov  sites; it configured through  the file `codecov.yml`
 and appropriate entries in Travis CI's matrix of builds.
+
+
+D.4 Codacy
+----------
+
+Codacy is  an online service  providing code  review.  We can  find this
+project's dashboard at:
+
+	   <https://www.codacy.com/app/marcomaggi/ccstrings>
+
+Usage of this service is  implemented through direct integration between
+GitHub and Codacy sites.
 
 
 ### end of file

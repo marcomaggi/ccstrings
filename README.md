@@ -1,37 +1,43 @@
-# Ccstrings
+# CCStrings
 
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/XXX/badge)](https://bestpractices.coreinfrastructure.org/projects/XXX)
 [![Build Status](https://travis-ci.org/marcomaggi/ccstrings.svg?branch=master)](https://travis-ci.org/marcomaggi/ccstrings)
-[![Coverity passed](https://scan.coverity.com/projects/YYY/badge.svg)](https://scan.coverity.com/projects/marcomaggi-ccstrings)
 [![codecov](https://codecov.io/gh/marcomaggi/ccstrings/branch/master/graph/badge.svg)](https://codecov.io/gh/marcomaggi/ccstrings)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b07b27b019014a2198d498e2e623ad5a)](https://www.codacy.com/app/marcomaggi/ccstrings?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=marcomaggi/ccstrings&amp;utm_campaign=Badge_Grade)
 
 
 ## Introduction
 
-This package  installs a  standard C11  language library;  it implements
-custom  string   structures.   This  package  depends   on  the  package
-CCExceptions, at least version 0.6.
+This is  a template project, to  be used as starting  point for packages
+that install a C language library.
 
-The  package makes  use of  the  GNU Autotools  and  it is  tested on  a
-GNU+Linux system.
+The  library  targets  POSIX  systems.   This  package  depends  on  the
+packages:  CCExceptions,  at least  version  0.8.0;  CCMemory, at  least
+version  0.2.1; CCStructs,  at least  version  0.1.0.  To  run the  test
+suite: this package  depends upon the package CCTests,  at least version
+0.3.0.
+
+The package uses the GNU Autotools and it is tested, using Travis CI, on
+both Ubuntu GNU+Linux  systems and OS X systems.  The  package relies on
+`pkg-config` to find the dependencies installed on the system.
 
 
 ## License
 
-Copyright (c) 2017 Marco Maggi <marco.maggi-ipsu@poste.it>
+Copyright (c) 2012, 2015-2018 Marco Maggi <marco.maggi-ipsu@poste.it><br/>
+All rights reserved.
 
 This program is free software: you  can redistribute it and/or modify it
-under the terms of the GNU Lesser General Public License as published by
-the Free  Software Foundation, either version  3 of the License,  or (at
-your option) any later version.
+under the  terms of the GNU  General Public License as  published by the
+Free Software Foundation,  either version 3 of the License,  or (at your
+option) any later version.
 
 This program  is distributed  in the  hope that it  will be  useful, but
 WITHOUT   ANY   WARRANTY;  without   even   the   implied  warranty   of
 MERCHANTABILITY  or  FITNESS FOR  A  PARTICULAR  PURPOSE.  See  the  GNU
 General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy  of the GNU General Public License along
+with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 ## Install
@@ -83,9 +89,9 @@ against the test suite with:
 $ make installcheck
 ```
 
-From a repository checkout or snapshot  (the ones from the GitHub site):
+From a repository checkout or snapshot  (the ones from the Github site):
 we  must install  the GNU  Autotools  (GNU Automake,  GNU Autoconf,  GNU
-Libtool), then  we must first run  the script "autogen.sh" from  the top
+Libtool), then  we must first run  the script `autogen.sh` from  the top
 source directory, to generate the needed files:
 
 ```
@@ -115,26 +121,14 @@ $ make install
 
 ## Usage
 
-Read the documentation.
+Read the documentation generated from  the Texinfo sources.  The package
+installs the documentation  in Info format; we can  generate and install
+documentation in HTML format by running:
 
-*IMPORTANT*  To use  the library  we must  enable the  appropriate POSIX
-features when including the standard header files; so either: we include
-`ccexceptions.h` as first  header, or we include  `ccstrings.h` as first
-header, or  we include the  following definition before  including *all*
-the header files:
-
-```C
-#define _POSIX_C_SOURCE 200809L
 ```
-
-*IMPORTANT* We need to remember that,  before using the library, we must
-call:
-
-```C
-ccstr_init();
+$ make html
+$ make install-html
 ```
-
-to initialise some internal data structures.
 
 
 ## Credits
@@ -173,18 +167,24 @@ the GNU Project software can be found here:
 
 [http://www.gnu.org/](http://www.gnu.org/)
 
+the package CCExceptions is available at:
+
+[https://github.com/marcomaggi/ccexceptions/](https://github.com/marcomaggi/ccexceptions/)
+
+the package CCMemory is available at:
+
+[https://github.com/marcomaggi/ccmemory/](https://github.com/marcomaggi/ccmemory/)
+
+the package CCStructs is available at:
+
+[https://github.com/marcomaggi/ccstructs/](https://github.com/marcomaggi/ccstructs/)
+
+the package CCTests is available at:
+
+[https://github.com/marcomaggi/cctests/](https://github.com/marcomaggi/cctests/)
+
 
 ## Badges and static analysis
-
-### CII Best Practices
-
-The  Linux  Foundation's  Core   Infrastructure  Initiative  (CII)  Best
-Practices badge is a way for Free/Libre and Open Source Software (FLOSS)
-projects to show that they follow  best practices.  We can find the self
-certification at:
-
-[https://bestpractices.coreinfrastructure.org/projects/XXX/](https://bestpractices.coreinfrastructure.org/projects/XXX/)
-
 
 ### Travis CI
 
@@ -196,18 +196,6 @@ project's dashboard at:
 
 Usage of this  service is configured through the  file `.travis.yml` and
 additional scripts are under the directory `meta/travis-ci`.
-
-
-### Coverity Scan
-
-Coverity Scan is  a service providing the results of  static analysis on
-open source coding projects.  We can find this project's dashboard at:
-
-[https://scan.coverity.com/projects/marcomaggi-ccstrings](https://scan.coverity.com/projects/marcomaggi-ccstrings)
-
-Usage of this  service is implemented with make rules;  see the relevant
-section in the file `Makefile.am`.  To access the service a unique token
-is needed: this token is private and is owned by the current maintainer.
 
 
 ### Clang's Static Analyzer
@@ -232,4 +220,15 @@ project's dashboard at:
 Usage of  this service is  implemented through direct  interface between
 GitHub and Codecov  sites; it configured through  the file `codecov.yml`
 and appropriate entries in Travis CI's matrix of builds.
+
+
+### Codacy
+
+Codacy is  an online service  providing code  review.  We can  find this
+project's dashboard at:
+
+[https://www.codacy.com/app/marcomaggi/ccstrings](https://www.codacy.com/app/marcomaggi/ccstrings)
+
+Usage of this service is  implemented through direct integration between
+GitHub and Codacy sites.
 
