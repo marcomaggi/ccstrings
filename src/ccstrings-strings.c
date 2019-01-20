@@ -1,5 +1,5 @@
 /*
-  Part of: CCStr
+  Part of: CCStrings
   Contents: handling of strings
   Date: Jul  6, 2017
 
@@ -7,7 +7,7 @@
 
 
 
-  Copyright (C) 2017 Marco Maggi <marco.maggi-ipsu@poste.it>
+  Copyright (C) 2017, 2019 Marco Maggi <marco.maggi-ipsu@poste.it>
 
   This is free software; you  can redistribute it and/or modify it under
   the terms of the GNU Lesser General Public License as published by the
@@ -226,7 +226,7 @@ ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * templa
     va_list	ap;
     va_start(ap, template);
     {
-      ccstr_ascii_t	block = ccstr_buffer_target_ascii(B);
+      ccmem_ascii_t	block = ccstr_buffer_target_ascii(B);
       required_len = vsnprintf(block.ptr, block.len, template, ap);
       if (block.len > required_len) {
 	/* Success! */
@@ -249,7 +249,7 @@ ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * templa
     va_list	ap;
     va_start(ap, template);
     {
-      ccstr_ascii_t	block = ccstr_buffer_target_ascii(B);
+      ccmem_ascii_t	block = ccstr_buffer_target_ascii(B);
       required_len = vsnprintf(block.ptr, block.len, template, ap);
       B->bufoff += required_len;
       assert(block.len > required_len);
@@ -268,7 +268,7 @@ ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, const char * templ
     va_list	aq;
     va_copy(aq, ap);
     {
-      ccstr_ascii_t	block = ccstr_buffer_target_ascii(B);
+      ccmem_ascii_t	block = ccstr_buffer_target_ascii(B);
       required_len = vsnprintf(block.ptr, block.len, template, aq);
       if (block.len > required_len) {
 	/* Success! */
@@ -291,7 +291,7 @@ ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, const char * templ
     va_list	aq;
     va_copy(aq, ap);
     {
-      ccstr_ascii_t	block = ccstr_buffer_target_ascii(B);
+      ccmem_ascii_t	block = ccstr_buffer_target_ascii(B);
       required_len = vsnprintf(block.ptr, block.len, template, aq);
       B->bufoff += required_len;
       assert(block.len > required_len);

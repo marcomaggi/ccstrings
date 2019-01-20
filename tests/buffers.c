@@ -7,7 +7,7 @@
 
 
 
-  Copyright (C) 2017, 2018 Marco Maggi <marco.maggi-ipsu@poste.it>
+  Copyright (C) 2017-2019 Marco Maggi <marco.maggi-ipsu@poste.it>
 
   This is free software; you  can redistribute it and/or modify it under
   the terms of the GNU Lesser General Public License as published by the
@@ -90,7 +90,7 @@ test_buffer_format (void)
     ccstr_clean_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao\n");
     if (0) {
-      ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
+      ccmem_ascii_t	block = ccstr_buffer_output_ascii(B);
       fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
     }
     assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao\n"));
@@ -118,7 +118,7 @@ test_buffer_format_realloc (void)
     ccstr_clean_handler_buffer_init(L, B_H, B);
     ccstr_buffer_format(L, B, "ciao %d %d %d\n", 1, 2, 3);
     if (0) {
-      ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
+      ccmem_ascii_t	block = ccstr_buffer_output_ascii(B);
       fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
     }
     assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao 1 2 3\n"));
@@ -146,7 +146,7 @@ test_buffer_format_multiple (void)
     ccstr_buffer_format(L, B, "ciao");
     ccstr_buffer_format(L, B, " mamma\n");
     if (0) {
-      ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
+      ccmem_ascii_t	block = ccstr_buffer_output_ascii(B);
       fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
     }
     assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao mamma\n"));
@@ -175,7 +175,7 @@ test_buffer_format_multiple_realloc (void)
     ccstr_buffer_format(L, B, "ciao ");
     ccstr_buffer_format(L, B, "mamma\n");
     if (0) {
-      ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
+      ccmem_ascii_t	block = ccstr_buffer_output_ascii(B);
       fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
     }
     assert(0 == strcmp(ccstr_buffer_output_ascii(B).ptr, "ciao mamma\n"));
@@ -203,7 +203,7 @@ test_buffer_format_to_stream (void)
     ccstr_buffer_format(L, B, "ciao ");
     ccstr_buffer_format(L, B, "mamma\n");
     if (0) {
-      ccstr_ascii_t	block = ccstr_buffer_output_ascii(B);
+      ccmem_ascii_t	block = ccstr_buffer_output_ascii(B);
       fprintf(stderr, "%s: \"%s\"\n", __func__, (char *)block.ptr);
     }
     ccstr_buffer_fwrite(L, B, stdout);

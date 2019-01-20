@@ -5,9 +5,10 @@
 
   Abstract
 
+	This header file must be included  in all the source files using
+	CCStrings.
 
-
-  Copyright (C) 2017, 2018 Marco Maggi <marco.maggi-ipsu@poste.it>
+  Copyright (C) 2017-2019 Marco Maggi <marco.maggi-ipsu@poste.it>
 
   This program is  free software: you can redistribute  it and/or modify
   it  under the  terms  of  the GNU  Lesser  General  Public License  as
@@ -44,7 +45,7 @@ extern "C" {
    int unused_variable CCSTR_UNUSED;
 */
 #ifdef __GNUC__
-#  define CCSTR_UNUSED		__attribute__((unused))
+#  define CCSTR_UNUSED		__attribute__((__unused__))
 #else
 #  define CCSTR_UNUSED		/* empty */
 #endif
@@ -60,15 +61,15 @@ extern "C" {
 #if defined _WIN32 || defined __CYGWIN__
 #  ifdef BUILDING_DLL
 #    ifdef __GNUC__
-#      define ccstr_decl		__attribute__((__dllexport__)) extern
+#      define ccstr_decl	__attribute__((__dllexport__)) extern
 #    else
-#      define ccstr_decl		__declspec(__dllexport__) extern
+#      define ccstr_decl	__declspec(dllexpor) extern
 #    endif
 #  else
 #    ifdef __GNUC__
-#      define ccstr_decl		__attribute__((__dllimport__)) extern
+#      define ccstr_decl	__attribute__((__dllimport__)) extern
 #    else
-#      define ccstr_decl		__declspec(__dllimport__) extern
+#      define ccstr_decl	__declspec(dllimport) extern
 #    endif
 #  endif
 #  define ccstr_private_decl	extern
@@ -117,7 +118,7 @@ ccstr_decl void ccstr_init (void)
  ** Version functions.
  ** ----------------------------------------------------------------- */
 
-ccstr_decl const char *	ccstr_version_string		(void);
+ccstr_decl char const *	ccstr_version_string		(void);
 ccstr_decl int		ccstr_version_interface_current	(void);
 ccstr_decl int		ccstr_version_interface_revision(void);
 ccstr_decl int		ccstr_version_interface_age	(void);
@@ -127,9 +128,6 @@ ccstr_decl int		ccstr_version_interface_age	(void);
  ** Forward declarations.
  ** ----------------------------------------------------------------- */
 
-typedef struct ccstr_block_t			ccstr_block_t;
-typedef struct ccstr_ascii_t			ccstr_ascii_t;
-
 typedef struct ccstr_buffer_t			ccstr_buffer_t;
 
 typedef struct ccstr_vtable_t			ccstr_vtable_t;
@@ -138,26 +136,11 @@ typedef struct ccstr_t				ccstr_t;
 typedef struct ccstr_descriptor_base_t		ccstr_descriptor_base_t;
 typedef struct ccstr_condition_base_t		ccstr_condition_base_t;
 
-typedef struct ccstr_descriptor_buffer_size_overflow_t	ccstr_descriptor_buffer_size_overflow_t;
-typedef struct ccstr_condition_buffer_size_overflow_t	ccstr_condition_buffer_size_overflow_t;
+typedef struct ccstr_descriptor_buffer_size_overflow_t		ccstr_descriptor_buffer_size_overflow_t;
+typedef struct ccstr_condition_buffer_size_overflow_t		ccstr_condition_buffer_size_overflow_t;
 
 typedef struct ccstr_descriptor_buffer_output_incomplete_t	ccstr_descriptor_buffer_output_incomplete_t;
 typedef struct ccstr_condition_buffer_output_incomplete_t	ccstr_condition_buffer_output_incomplete_t;
-
-
-/** --------------------------------------------------------------------
- ** Blocks handling.
- ** ----------------------------------------------------------------- */
-
-struct ccstr_block_t {
-  int8_t *	ptr;
-  size_t	len;
-};
-
-struct ccstr_ascii_t {
-  char *	ptr;
-  size_t	len;
-};
 
 
 /** --------------------------------------------------------------------
@@ -166,7 +149,7 @@ struct ccstr_ascii_t {
 
 struct ccstr_buffer_t {
   /* Pointer to the output buffer. */
-  int8_t *	bufptr;
+  uint8_t *	bufptr;
 
   /* Number of bytes allocated for the output buffer. */
   size_t	buflen;
@@ -216,11 +199,11 @@ ccstr_buffer_full_p (ccstr_buffer_t * B)
 /* ------------------------------------------------------------------ */
 
 __attribute__((pure,nonnull(1),always_inline))
-static inline ccstr_block_t
+static inline ccmem_block_t
 ccstr_buffer_output_block (ccstr_buffer_t * B)
 /* Return a block representing the data in the buffer. */
 {
-  ccstr_block_t	block = {
+  ccmem_block_t	block = {
     .ptr = B->bufptr,
     .len = B->bufoff
   };
@@ -228,11 +211,11 @@ ccstr_buffer_output_block (ccstr_buffer_t * B)
 }
 
 __attribute__((pure,nonnull(1),always_inline))
-static inline ccstr_ascii_t
+static inline ccmem_ascii_t
 ccstr_buffer_output_ascii (ccstr_buffer_t * B)
 /* Return a block representing the data in the buffer. */
 {
-  ccstr_ascii_t	block = {
+  ccmem_ascii_t	block = {
     .ptr = (char *)B->bufptr,
     .len = B->bufoff
   };
@@ -242,13 +225,13 @@ ccstr_buffer_output_ascii (ccstr_buffer_t * B)
 /* ------------------------------------------------------------------ */
 
 __attribute__((pure,nonnull(1),always_inline))
-static inline ccstr_block_t
+static inline ccmem_block_t
 ccstr_buffer_target_block (ccstr_buffer_t * B)
 /* Return a block representing the free  room in the buffer.  The return
    value   of  this   function  is   meaningful  only   if  a   call  to
    "ccstr_buffer_full_p()" applied to the same buffer returns false. */
 {
-  ccstr_block_t	block = {
+  ccmem_block_t	block = {
     .ptr = (B->bufptr + B->bufoff),
     .len = (B->buflen - B->bufoff)
   };
@@ -256,13 +239,13 @@ ccstr_buffer_target_block (ccstr_buffer_t * B)
 }
 
 __attribute__((pure,nonnull(1),always_inline))
-static inline ccstr_ascii_t
+static inline ccmem_ascii_t
 ccstr_buffer_target_ascii (ccstr_buffer_t * B)
 /* Return a block representing the free  room in the buffer.  The return
    value   of  this   function  is   meaningful  only   if  a   call  to
    "ccstr_buffer_full_p()" applied to the same buffer returns false. */
 {
-  ccstr_ascii_t	ascii = {
+  ccmem_ascii_t	ascii = {
     .ptr = (char *)(B->bufptr + B->bufoff),
     .len = (B->buflen - B->bufoff)
   };
@@ -289,7 +272,7 @@ struct ccstr_vtable_t {
 struct ccstr_t {
   ccstr_vtable_t const *vtable;
   size_t		len;
-  wchar_t *		ptr;
+  wchar_t const *	ptr;
   wchar_t		data[];
 };
 
@@ -345,11 +328,11 @@ ccstr_full_p (ccstr_t * S)
 /* ------------------------------------------------------------------ */
 
 __attribute__((pure,nonnull(1),always_inline))
-static inline ccstr_block_t
+static inline ccmem_block_t
 ccstr_output_block (ccstr_t * S)
 /* Return a block representing the data in the buffer. */
 {
-  ccstr_block_t	block = {
+  ccmem_block_t	block = {
     .ptr = S->bufptr,
     .len = S->bufoff
   };
@@ -357,11 +340,11 @@ ccstr_output_block (ccstr_t * S)
 }
 
 __attribute__((pure,nonnull(1),always_inline))
-static inline ccstr_ascii_t
+static inline ccmem_ascii_t
 ccstr_output_ascii (ccstr_t * S)
 /* Return a block representing the data in the buffer. */
 {
-  ccstr_ascii_t	block = {
+  ccmem_ascii_t	block = {
     .ptr = (char *)S->bufptr,
     .len = S->bufoff
   };
@@ -371,13 +354,13 @@ ccstr_output_ascii (ccstr_t * S)
 /* ------------------------------------------------------------------ */
 
 __attribute__((pure,nonnull(1),always_inline))
-static inline ccstr_block_t
+static inline ccmem_block_t
 ccstr_target_block (ccstr_t * S)
 /* Return a block representing the free  room in the buffer.  The return
    value   of  this   function  is   meaningful  only   if  a   call  to
    "ccstr_full_p()" applied to the same buffer returns false. */
 {
-  ccstr_block_t	block = {
+  ccmem_block_t	block = {
     .ptr = (S->bufptr + S->bufoff),
     .len = (S->buflen - S->bufoff)
   };
@@ -385,13 +368,13 @@ ccstr_target_block (ccstr_t * S)
 }
 
 __attribute__((pure,nonnull(1),always_inline))
-static inline ccstr_ascii_t
+static inline ccmem_ascii_t
 ccstr_target_ascii (ccstr_t * S)
 /* Return a block representing the free  room in the buffer.  The return
    value   of  this   function  is   meaningful  only   if  a   call  to
    "ccstr_full_p()" applied to the same buffer returns false. */
 {
-  ccstr_ascii_t	ascii = {
+  ccmem_ascii_t	ascii = {
     .ptr = (char *)(S->bufptr + S->bufoff),
     .len = (S->buflen - S->bufoff)
   };

@@ -7,7 +7,7 @@
 
 
 
-  Copyright (C) 2017 Marco Maggi <marco.maggi-ipsu@poste.it>
+  Copyright (C) 2017, 2019 Marco Maggi <marco.maggi-ipsu@poste.it>
 
   This program is  free software: you can redistribute  it and/or modify
   it  under the  terms  of  the GNU  Lesser  General  Public License  as
@@ -32,7 +32,7 @@
 #include "ccstrings-internals.h"
 
 
-const char *
+char const *
 ccstr_version_string (void)
 {
   return ccstrings_VERSION_INTERFACE_STRING;
