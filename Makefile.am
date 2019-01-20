@@ -6,6 +6,7 @@ EXTRA_DIST		= INSTALL			\
 			  meta/slackware/slack-desc.in
 dist_doc_DATA		= README COPYING
 AM_CFLAGS		= $(MMUX_CFLAGS) -I$(srcdir)/src -I$(builddir)/src
+MMUX_DEPENDENCY_INCLUDES = $(CCEXCEPTIONS_HEADER) $(CCMEMORY_HEADER) $(CCSTRUCTS_HEADER)
 
 ## --------------------------------------------------------------------
 
@@ -71,24 +72,8 @@ installcheck-local: $(TESTS)
 	@for f in $(TESTS); do $(builddir)/$$f; done
 
 
-#### Static analysis with Clang's Static Analyzer
-#
-# See the documentation for the command line tool at:
-#
-#    <http://clang-analyzer.llvm.org/scan-build.html>
-#
-# To run the tool we must do:
-#
-#    $ make clean
-#    $ make clang-static-analysis
-#
-# The  program  "scan-build"  works  by  overriding  the  CC  and  CXX
-# environment variables.
-#
+#### common rules
 
-.PHONY: clang-static-analysis
-
-clang-static-analysis:
-	scan-build make
+include $(top_srcdir)/meta/automake/mmux-makefile-rules
 
 ### end of file
