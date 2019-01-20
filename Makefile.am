@@ -6,7 +6,6 @@ EXTRA_DIST		= INSTALL			\
 			  meta/slackware/slack-desc.in
 dist_doc_DATA		= README COPYING
 AM_CFLAGS		= $(MMUX_CFLAGS) -I$(srcdir)/src -I$(builddir)/src
-MMUX_DEPENDENCY_INCLUDES = $(CCEXCEPTIONS_HEADER) $(CCMEMORY_HEADER) $(CCSTRUCTS_HEADER)
 
 ## --------------------------------------------------------------------
 

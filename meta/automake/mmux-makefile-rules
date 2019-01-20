@@ -5,7 +5,7 @@
 #   include $(top_srcdir)/meta/automake/mmux-makefile-rules
 #
 
-AM_ETAGSFLAGS		= $(MMUX_DEPENDENCY_INCLUDES) \
+AM_ETAGSFLAGS		= $(MMUX_DEPENDENCIES_INCLUDES) \
 	--regex='{c}/"\\_<\\(ccname_\\(?:alloc\\|delete\\|final\\|i\\(?:face_\\(?:method\\(?:_type\\)?\\|new\\(?:_type\\)?\\|table\\(?:_type\\)?\\)\\|nit\\)\\|method\\(?:_type\\)?\\|new\\|\\(?:releas\\|tabl\\(?:e_typ\\)?\\)e\\)\\)\\_>"/'
 
 
