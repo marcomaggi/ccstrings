@@ -5,7 +5,8 @@ AUTOMAKE_OPTIONS	= foreign
 EXTRA_DIST		= INSTALL			\
 			  meta/slackware/slack-desc.in
 dist_doc_DATA		= README COPYING
-AM_CFLAGS		= $(MMUX_CFLAGS) -I$(srcdir)/src -I$(builddir)/src
+AM_CFLAGS		= $(MMUX_CFLAGS)
+AM_CPPFLAGS		= -I$(srcdir)/src
 
 ## --------------------------------------------------------------------
 
@@ -13,7 +14,8 @@ EXTRA_DIST		+= meta/scripts/ccstrings.pc.in
 pkgconfigdir		= $(libdir)/pkgconfig
 nodist_pkgconfig_DATA	= meta/scripts/ccstrings.pc
 
-## --------------------------------------------------------------------
+
+#### documentation
 
 AM_MAKEINFOFLAGS	= --no-split
 AM_MAKEINFOHTMLFLAGS	= --split=node -c WORDS_IN_PAGE=0 \
@@ -35,7 +37,8 @@ ccstrings_AGE		= @ccstrings_VERSION_INTERFACE_AGE@
 include_HEADERS		= src/ccstrings.h
 
 lib_LTLIBRARIES			= libccstrings.la
-libccstrings_la_CPPFLAGS	= $(CCEXCEPTIONS_CFLAGS) $(CCMEMORY_CFLAGS) $(CCSTRUCTS_CFLAGS)
+libccstrings_la_CPPFLAGS	= $(AM_CPPFLAGS)
+libccstrings_la_CFLAGS		= $(AM_CFLAGS) $(CCEXCEPTIONS_CFLAGS) $(CCMEMORY_CFLAGS) $(CCSTRUCTS_CFLAGS)
 libccstrings_la_LDFLAGS		= \
 	-version-info $(ccstrings_CURRENT):$(ccstrings_REVISION):$(ccstrings_AGE) \
 	$(CCEXCEPTIONS_LIBS) $(CCMEMORY_LIBS) $(CCSTRUCTS_LIBS)
@@ -54,14 +57,21 @@ check_PROGRAMS	= \
 	tests/version		\
 	tests/buffers
 
+if MMUX_TESTING_ENABLED
 TESTS				= $(check_PROGRAMS)
+endif
 
-ccstrings_tests_cppflags	= -I$(srcdir)/src $(CCEXCEPTIONS_FLAGS)
-ccstrings_tests_ldadd		= libccstrings.la $(CCEXCEPTIONS_LIBS)
+ccstrings_tests_cppflags	= $(AM_CPPFLAGS)
+ccstrings_tests_cflags		= $(AM_CFLAGS)    $(CCEXCEPTIONS_FLAGS) $(CCMEMORY_FLAGS) $(CCSTRUCTS_FLAGS) $(CCTESTS_FLAGS)
+ccstrings_tests_ldadd		= libccstrings.la $(CCTESTS_LIBS)
 
+## --------------------------------------------------------------------
+
+tests_version_CFLAGS		= $(ccstrings_tests_cflags)
 tests_version_CPPFLAGS		= $(ccstrings_tests_cppflags)
 tests_version_LDADD		= $(ccstrings_tests_ldadd)
 
+tests_buffers_CFLAGS		= $(ccstrings_tests_cflags)
 tests_buffers_CPPFLAGS		= $(ccstrings_tests_cppflags)
 tests_buffers_LDADD		= $(ccstrings_tests_ldadd)
 

@@ -9,7 +9,7 @@ AC_INIT([CCStrings],[MMUX_PACKAGE_VERSION],
 MMUX_INIT
 MMUX_LIBTOOL_LIBRARY_VERSIONS([ccstrings],1,0,0)
 AC_REVISION([0.1])
-AC_COPYRIGHT([Copyright (c) 2017, 2018, 2019 Marco Maggi <marco.maggi-ipsu@poste.it>
+AC_COPYRIGHT([Copyright (c) 2017-2019 Marco Maggi <marco.maggi-ipsu@poste.it>
 
 This program is free software: you  can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by
@@ -46,6 +46,7 @@ LT_INIT
 #### basic system inspection
 
 MMUX_CHECK_TARGET_OS
+AX_IS_RELEASE([git-directory])
 
 AC_LANG([C])
 MMUX_LANG_C11
