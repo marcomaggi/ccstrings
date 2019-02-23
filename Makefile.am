@@ -5,8 +5,8 @@ AUTOMAKE_OPTIONS	= foreign
 EXTRA_DIST		= INSTALL			\
 			  meta/slackware/slack-desc.in
 dist_doc_DATA		= README COPYING
-AM_CFLAGS		= $(MMUX_CFLAGS)
 AM_CPPFLAGS		= -I$(srcdir)/src
+AM_CFLAGS		= $(MMUX_CFLAGS)
 
 ## --------------------------------------------------------------------
 
@@ -65,12 +65,12 @@ ccstrings_tests_ldadd		= libccstrings.la $(CCTESTS_LIBS)
 
 ## --------------------------------------------------------------------
 
-tests_version_CFLAGS		= $(ccstrings_tests_cflags)
 tests_version_CPPFLAGS		= $(ccstrings_tests_cppflags)
+tests_version_CFLAGS		= $(ccstrings_tests_cflags)
 tests_version_LDADD		= $(ccstrings_tests_ldadd)
 
-tests_buffers_CFLAGS		= $(ccstrings_tests_cflags)
 tests_buffers_CPPFLAGS		= $(ccstrings_tests_cppflags)
+tests_buffers_CFLAGS		= $(ccstrings_tests_cflags)
 tests_buffers_LDADD		= $(ccstrings_tests_ldadd)
 
 ## --------------------------------------------------------------------
