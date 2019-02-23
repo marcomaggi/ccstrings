@@ -33,18 +33,35 @@
 
 @c To be used as @value{COPYRIGHT_YEARS} whenever we need to include the
 @c list of copyright years.
-@set COPYRIGHT_YEARS            2017, 2018
-
-@c To be used as @value{CCEXCEPTIONS_VERSION} whenever we need to include the required CCExceptions
-@c version.
-@set CCEXCEPTIONS_VERSION       0.6
+@set COPYRIGHT_YEARS            2017, 2018, 2019
 
 @c ------------------------------------------------------------
 
-@set GITHUB_URL                 @url{https://github.com/marcomaggi/@value{PACKAGE_NICKNAME}}
-@set BITBUCKET_URL              @url{https://bitbucket.org/marcomaggi/@value{PACKAGE_NICKNAME}}
-@set DOWNLOAD_URL               @url{https://bitbucket.org/marcomaggi/@value{PACKAGE_NICKNAME}/downloads}
-@set DOCUMENTATION_URL          @url{https://marcomaggi.github.io/docs/@value{PACKAGE_NICKNAME}.html}
+@set CCExceptionsVersion       0.8.0
+@set CCMemoryVersion           0.2.1
+@set CCStructsVersion          0.2.0
+@set CCTestsVersion            0.3.0
+
+@c ------------------------------------------------------------
+
+@set PackageAutoconfPrefix              CCSTRINGS
+@set PackagePkgconfigModule             ccstrings
+@set PackageLibsVar                     @env{CCSTRINGS_LIBS}
+@set PackageCflagsVar                   @env{CCSTRINGS_CFLAGS}
+@c This is the stem of the library in "libccstrings.so".
+@set PackageLibstem                     ccstrings
+@set PackageApiPrefixLower              ccstr_
+@set PackageApiPrefixUpper              CCSTR_
+
+@set PackageHeader                      ccstrings.h
+@set PackageHeaderFile                  @file{@value{PackageHeader}}
+
+@c ------------------------------------------------------------
+
+@set GithubUrl                 @url{https://github.com/marcomaggi/@value{PACKAGE_NICKNAME}}
+@set BitbucketUrl              @url{https://bitbucket.org/marcomaggi/@value{PACKAGE_NICKNAME}}
+@set DownloadUrl               @url{https://bitbucket.org/marcomaggi/@value{PACKAGE_NICKNAME}/downloads}
+@set DocumentationUrl          @url{https://marcomaggi.github.io/docs/@value{PACKAGE_NICKNAME}.html}
 
 @c page
 @c ------------------------------------------------------------
@@ -53,25 +70,28 @@
 
 @copying
 This document describes version @value{VERSION} of @value{PACKAGE}, a C11 language library
-implementing custom strings.  This package depends on the package CCExceptions, at least version
-@value{CCEXCEPTIONS_VERSION}.
+implementing custom strings.
 
-The package is distributed under the terms of the @gnu{} General Public
-License (@gpl{}).
+The library supports @posix{} platforms.  The library depends on the packages: CCExceptions, at
+least version @value{CCExceptionsVersion}; CCMemory, at least version @value{CCMemoryVersion};
+CCStructs, at least version @value{CCStructsVersion}.  To run the test suite: the package depends
+upon the package CCTests, at least version @value{CCTestsVersion}.
+
+The package is distributed under the terms of the @gnu{} Lesser General Public License (@lgpl{}).
 
 The latest release can be downloaded from:
 
-@center @value{DOWNLOAD_URL}
+@center @value{DownloadUrl}
 
 @noindent
 development takes place at:
 
-@center @value{GITHUB_URL}
+@center @value{GithubUrl}
 
 @noindent
 and as backup at:
 
-@center @value{BITBUCKET_URL}
+@center @value{BitbucketUrl}
 
 @noindent
 Copyright @copyright{} @value{COPYRIGHT_YEARS} by @value{AUTHOR} @value{AUTHOR_EMAIL}
@@ -133,7 +153,7 @@ included in the section entitled ``@gnu{} Free Documentation License''.
 
 Appendices
 
-* Package License::             GNU General Public License.
+* Package License::             GNU Lesser General Public License.
 * Documentation License::       GNU Free Documentation License.
 * references::                  Bibliography and references.
 
@@ -152,21 +172,19 @@ Indexes
 
 
 This document describes version @value{VERSION} of @value{PACKAGE}, a C11 language library
-implementing custom strings.  This package depends on the package CCExceptions, at least version
-@value{CCEXCEPTIONS_VERSION}.
+implementing custom strings.
 
-@value{PACKAGE} installs the single header file @file{ccstrings.h}.  All the function names in the
-@api{} are prefixed with @code{ccstr_}; all the constant names are prefixed with @code{CCSTR_}; all
-the type names are prefixed with @code{ccstr_} and suffixed with @code{_t}.
+This package supports @posix{} platforms.  This package depends on the packages: CCExceptions, at
+least version @value{CCExceptionsVersion}; CCMemory, at least version @value{CCMemoryVersion};
+CCStructs, at least version @value{CCStructsVersion}.  To run the test suite: this package depends
+upon the package CCTests, at least version @value{CCTestsVersion}.
 
-@strong{IMPORTANT} To use the library we must enable the appropriate @posix{} features when
-including the standard header files; so either: we include @file{ccexceptions.h} as first header, or
-we include @file{ccstrings.h} as first header, or we include the following definition before
-including @strong{all} the header files:
-
-@example
-#define _POSIX_C_SOURCE         200809L
-@end example
+@cindex @value{PackageHeaderFile}, header file
+@cindex Header file @value{PackageHeaderFile}
+@value{PACKAGE} installs the single header file @value{PackageHeaderFile}.  All the function names
+in the @api{} are prefixed with @code{@value{PackageApiPrefixLower}}; all the preprocessor symbol
+names are prefixed with @code{@value{PackageApiPrefixUpper}}; all the type names are prefixed with
+@code{@value{PackageApiPrefixLower}} and suffixed with @code{_t}.
 
 We need to remember that, before using the library, we must call:
 
@@ -179,31 +197,15 @@ to initialise some internal data structures.
 
 @menu
 * overview linking::            Linking code with the library.
+* overview ccnames::            Generated function names.
+* overview exceptions::         Handling exceptional conditions.
+* overview allocation::         Memory allocation for pathname instances.
 @end menu
 
-@c page
-@node overview linking
-@section Linking code with the library
-
-
-This package installs a data file for @command{pkg-config}, so when searching for the installed
-library with the @gnu{} Autotools, we can add the following macro use to @file{configure.ac}:
-
-@example
-PKG_CHECK_MODULES([CCSTRINGS],[ccstrings >= 0.1])
-@end example
-
-@noindent
-which will set the variables @code{CCSTRINGS_LIBS} and @code{CCSTRINGS_CFLAGS}.
-
-Alternatively we can use the raw @gnu{} Autoconf macros:
-
-@example
-AC_CHECK_LIB([ccstrings],[ccstr_version_string],,
-  [AC_MSG_FAILURE([test for CCStrings library failed])])
-AC_CHECK_HEADERS([ccstrings.h],,
-  [AC_MSG_FAILURE([test for CCStrings header failed])])
-@end example
+@include overview-linking.texi
+@include overview-ccnames.texi
+@include overview-ccexceptions.texi
+@include overview-ccmemory.texi
 
 @c page
 @node version
@@ -721,22 +723,22 @@ buffer is left untouched and its contents are still valid.
 
 The documentation of @value{PACKAGE} is available online:
 
-@center @value{DOCUMENTATION_URL}
+@center @value{DocumentationUrl}
 
 @noindent
 the latest release of this package can be downloaded from:
 
-@center @value{DOWNLOAD_URL}
+@center @value{DownloadUrl}
 
 @noindent
 development takes place at:
 
-@center @value{GITHUB_URL}
+@center @value{GithubUrl}
 
 @noindent
 and as backup at:
 
-@center @value{BITBUCKET_URL}
+@center @value{BitbucketUrl}
 
 We can find the package CCExceptions at:
 
