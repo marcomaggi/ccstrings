@@ -217,7 +217,7 @@ test_buffer_format_to_stream (void)
 int
 main (int argc CCSTR_UNUSED, const char *const argv[] CCSTR_UNUSED)
 {
-  ccstr_init();
+  ccstr_library_init();
   if (1) { test_buffer_allocation(); }
   if (1) { test_buffer_handler(); }
   if (1) { test_buffer_format(); }

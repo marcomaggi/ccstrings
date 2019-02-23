@@ -7,7 +7,7 @@
 
 
 
-  Copyright (C) 2017, 2018 Marco Maggi <marco.maggi-ipsu@poste.it>
+  Copyright (C) 2017, 2018, 2019 Marco Maggi <marco.maggi-ipsu@poste.it>
 
   This is free software; you  can redistribute it and/or modify it under
   the terms of the GNU Lesser General Public License as published by the
@@ -217,7 +217,7 @@ ccstr_condition_is_buffer_output_incomplete (const cce_condition_t * C)
  ** ----------------------------------------------------------------- */
 
 void
-ccstr_init (void)
+ccstr_library_init (void)
 {
   cce_descriptor_set_root_parent(&descriptor_base.descriptor);
 }

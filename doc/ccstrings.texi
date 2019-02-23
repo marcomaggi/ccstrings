@@ -189,7 +189,7 @@ names are prefixed with @code{@value{PackageApiPrefixUpper}}; all the type names
 We need to remember that, before using the library, we must call:
 
 @example
-ccstr_init();
+ccstr_library_init();
 @end example
 
 @noindent
@@ -243,7 +243,7 @@ Return an integer representing the library interface current age.
 @chapter Library initialisation
 
 
-@deftypefun void ccstr_init (void)
+@deftypefun void ccstr_library_init (void)
 Initialise the internal structures of the library.  It is fine to call this function multiple times.
 
 @quotation

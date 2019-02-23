@@ -107,7 +107,7 @@ extern "C" {
  ** Initialisation.
  ** ----------------------------------------------------------------- */
 
-ccstr_decl void ccstr_init (void)
+ccstr_decl void ccstr_library_init (void)
   __attribute__((__constructor__));
 
 
