@@ -2,8 +2,7 @@
 
 ACLOCAL_AMFLAGS		= -I meta/autotools
 AUTOMAKE_OPTIONS	= foreign
-EXTRA_DIST		= INSTALL			\
-			  meta/slackware/slack-desc.in
+EXTRA_DIST		= INSTALL meta/slackware/slack-desc.in
 dist_doc_DATA		= README COPYING
 AM_CPPFLAGS		= -I$(srcdir)/src
 AM_CFLAGS		= $(MMUX_CFLAGS)
@@ -32,18 +31,17 @@ doc_ccstrings_TEXINFOS	= \
 
 #### libraries
 
-ccstrings_CURRENT	= @ccstrings_VERSION_INTERFACE_CURRENT@
-ccstrings_REVISION	= @ccstrings_VERSION_INTERFACE_REVISION@
-ccstrings_AGE		= @ccstrings_VERSION_INTERFACE_AGE@
+ccstrings_CURRENT		= @ccstrings_VERSION_INTERFACE_CURRENT@
+ccstrings_REVISION		= @ccstrings_VERSION_INTERFACE_REVISION@
+ccstrings_AGE			= @ccstrings_VERSION_INTERFACE_AGE@
+ccstrings_LINKER_VERSION	= -version-info $(ccstrings_CURRENT):$(ccstrings_REVISION):$(ccstrings_AGE)
 
-include_HEADERS		= src/ccstrings.h
+include_HEADERS			= src/ccstrings.h
 
 lib_LTLIBRARIES			= libccstrings.la
 libccstrings_la_CPPFLAGS	= $(AM_CPPFLAGS)
 libccstrings_la_CFLAGS		= $(AM_CFLAGS) $(CCEXCEPTIONS_CFLAGS) $(CCMEMORY_CFLAGS) $(CCSTRUCTS_CFLAGS)
-libccstrings_la_LDFLAGS		= \
-	-version-info $(ccstrings_CURRENT):$(ccstrings_REVISION):$(ccstrings_AGE) \
-	$(CCEXCEPTIONS_LIBS) $(CCMEMORY_LIBS) $(CCSTRUCTS_LIBS)
+libccstrings_la_LDFLAGS		= $(ccstrings_LINKER_VERSION) $(AM_LDFLAGS) $(CCEXCEPTIONS_LIBS) $(CCMEMORY_LIBS) $(CCSTRUCTS_LIBS)
 libccstrings_la_SOURCES= \
 	src/ccstrings.h			\
 	src/ccstrings-internals.h	\
@@ -64,8 +62,8 @@ TESTS				= $(check_PROGRAMS)
 endif
 
 ccstrings_tests_cppflags	= $(AM_CPPFLAGS)
-ccstrings_tests_cflags		= $(AM_CFLAGS)    $(CCEXCEPTIONS_FLAGS) $(CCMEMORY_FLAGS) $(CCSTRUCTS_FLAGS) $(CCTESTS_FLAGS)
-ccstrings_tests_ldadd		= libccstrings.la $(CCTESTS_LIBS)
+ccstrings_tests_cflags		= $(AM_CFLAGS) $(CCEXCEPTIONS_FLAGS) $(CCMEMORY_FLAGS) $(CCSTRUCTS_FLAGS) $(CCTESTS_FLAGS)
+ccstrings_tests_ldadd		= $(AM_LDFLAGS) libccstrings.la $(CCEXCEPTIONS_LIBS) $(CCMEMORY_LIBS) $(CCSTRUCTS_LIBS) $(CCTESTS_LIBS)
 
 ## --------------------------------------------------------------------
 
