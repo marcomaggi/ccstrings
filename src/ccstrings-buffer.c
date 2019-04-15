@@ -9,22 +9,24 @@
 
   Copyright (C) 2017-2019 Marco Maggi <marco.maggi-ipsu@poste.it>
 
-  This is free software; you  can redistribute it and/or modify it under
-  the terms of the GNU Lesser General Public License as published by the
-  Free Software  Foundation; either version  3.0 of the License,  or (at
-  your option) any later version.
+  This is free software; you can redistribute  it and/or modify it under the terms of
+  the GNU Lesser General Public License as published by the Free Software Foundation;
+  either version 3.0 of the License, or (at your option) any later version.
 
-  This library  is distributed in the  hope that it will  be useful, but
-  WITHOUT   ANY  WARRANTY;   without  even   the  implied   warranty  of
-  MERCHANTABILITY  or FITNESS  FOR A  PARTICULAR PURPOSE.   See  the GNU
-  Lesser General Public License for more details.
+  This library  is distributed in the  hope that it  will be useful, but  WITHOUT ANY
+  WARRANTY; without  even the implied  warranty of  MERCHANTABILITY or FITNESS  FOR A
+  PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
 
-  You  should have  received a  copy of  the GNU  Lesser  General Public
-  License along  with this library; if  not, write to  the Free Software
-  Foundation, Inc.,  59 Temple Place,  Suite 330, Boston,  MA 02111-1307
-  USA.
+  You should have received a copy of the GNU Lesser General Public License along with
+  this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+  Suite 330, Boston, MA 02111-1307 USA.
 
 */
+
+
+/** --------------------------------------------------------------------
+ ** Headers.
+ ** ----------------------------------------------------------------- */
 
 #include "ccstrings-internals.h"
 #include <limits.h>
@@ -39,9 +41,9 @@
 
 void
 ccstr_buffer_init (cce_location_t * L, ccstr_buffer_t * B, size_t initial_buflen)
-/* Initialise the buffer  structure.  Allocate memory for  the buffer at
-   the initial size of "initial_buflen".  If an error occurs allocating:
-   perform a non-local exit by jumping to L. */
+/* Initialise the  buffer structure.  Allocate memory  for the buffer at  the initial
+   size of "initial_buflen".  If an error occurs allocating: perform a non-local exit
+   by jumping to L. */
 {
   B->bufptr	= cce_sys_malloc(L, initial_buflen);
   B->buflen	= initial_buflen;
@@ -63,28 +65,18 @@ ccstr_buffer_final (ccstr_buffer_t * B)
  ** Predefined CCExceptions handler: buffer.
  ** ----------------------------------------------------------------- */
 
-__attribute__((nonnull(1,2)))
-static void
-ccstr_handler_buffer_function (const cce_condition_t * C CCE_UNUSED, cce_handler_t * H)
-{
-  ccstr_buffer_final(H->pointer);
-  if (0) { fprintf(stderr, "%s: done\n", __func__); }
-}
-
 void
 ccstr_clean_handler_buffer_init (cce_location_t * L, cce_clean_handler_t * H, ccstr_buffer_t * B)
 {
-  H->handler.function	= ccstr_handler_buffer_function;
-  H->handler.pointer	= B;
-  cce_register_clean_handler(L, H);
+  cce_init_and_register_handler(L, H, cce_default_clean_handler_function,
+				cce_resource_pointer(B), (cce_resource_destructor_fun_t *)ccstr_buffer_final);
 }
 
 void
 ccstr_error_handler_buffer_init (cce_location_t * L, cce_error_handler_t * H, ccstr_buffer_t * B)
 {
-  H->handler.function	= ccstr_handler_buffer_function;
-  H->handler.pointer	= B;
-  cce_register_error_handler(L, H);
+  cce_init_and_register_handler(L, H, cce_default_error_handler_function,
+				cce_resource_pointer(B), (cce_resource_destructor_fun_t *)ccstr_buffer_final);
 }
 
 
@@ -94,15 +86,14 @@ ccstr_error_handler_buffer_init (cce_location_t * L, cce_error_handler_t * H, cc
 
 void
 ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_len)
-/* Reallocate the  buffer enlarging  it so  that it  can hold  more than
-   "required_len" characters.  If an  error occurs reallocating: perform
-   a non-local exit by jumping to L. */
+/* Reallocate the  buffer enlarging it so  that it can hold  more than "required_len"
+   characters.  If an error occurs reallocating:  perform a non-local exit by jumping
+   to L. */
 {
   size_t	new_buflen;
 
-  /* We want the new buffer length to  be a multiple of 4096 that leaves
-     at least 4096 free characters  at the end after "newlen" characters
-     have been consumed. */
+  /* We want the new buffer length to be a multiple of 4096 that leaves at least 4096
+     free characters at the end after "newlen" characters have been consumed. */
   if (0) {
     size_t	tmplen;
     for (tmplen = B->buflen % 4096; tmplen > required_len; tmplen += 4096);
@@ -119,9 +110,8 @@ ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_le
      *   ((B->buflen % 4096) + (required_len % 4096) + 2) * 4096
      *   ((B->buflen % 4096) + (required_len % 4096) + 2) << 12
      *
-     * but we  must also check  for overflow  when doing the  shift.  We
-     * take  "UINT_MAX" as  upper  limit for  the  buffer size  (maximum
-     * number of bytes).
+     * but we must also check for overflow  when doing the shift.  We take "UINT_MAX"
+     * as upper limit for the buffer size (maximum number of bytes).
      */
     size_t	num_of_chunks = (B->buflen % 4096) + (required_len % 4096) + 2;
     if ((UINT_MAX >> 12) > num_of_chunks) {
@@ -148,6 +138,8 @@ ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * templa
   /* First attempt at writing the output. */
   {
     va_list	ap;
+    bool	done = false;
+
     va_start(ap, template);
     {
       ccmem_ascii_t	block = ccstr_buffer_target_ascii(B);
@@ -155,20 +147,19 @@ ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * templa
       if (block.len > required_len) {
 	/* Success! */
 	B->bufoff += required_len;
+	done = true;
       } else {
 	/* Not enough room! */
-  	goto fail;
+	done = false;
       }
     }
     va_end(ap);
-    return;
+    if (done) { return; }
   }
 
- fail:
   ccstr_buffer_enlarge(L, B, required_len);
 
-  /* Second attempt  at writing  the output.  We  assume that  this will
-     succeed.  */
+  /* Second attempt at writing the output.  We assume that this will succeed.  */
   {
     va_list	ap;
     va_start(ap, template);
@@ -190,6 +181,8 @@ ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, const char * templ
   /* First attempt at writing the output. */
   {
     va_list	aq;
+    bool	done = false;
+
     va_copy(aq, ap);
     {
       ccmem_ascii_t	block = ccstr_buffer_target_ascii(B);
@@ -197,20 +190,19 @@ ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, const char * templ
       if (block.len > required_len) {
 	/* Success! */
 	B->bufoff += required_len;
+	done = true;
       } else {
 	/* Not enough room! */
-  	goto fail;
+	done = false;
       }
     }
     va_end(aq);
-    return;
+    if (done) { return; }
   }
 
- fail:
   ccstr_buffer_enlarge(L, B, required_len);
 
-  /* Second attempt  at writing  the output.  We  assume that  this will
-     succeed.  */
+  /* Second attempt at writing the output.  We assume that this will succeed.  */
   {
     va_list	aq;
     va_copy(aq, ap);

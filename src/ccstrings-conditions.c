@@ -7,22 +7,19 @@
 
 
 
-  Copyright (C) 2017, 2018, 2019 Marco Maggi <marco.maggi-ipsu@poste.it>
+  Copyright (C) 2017-2019 Marco Maggi <marco.maggi-ipsu@poste.it>
 
-  This is free software; you  can redistribute it and/or modify it under
-  the terms of the GNU Lesser General Public License as published by the
-  Free Software  Foundation; either version  3.0 of the License,  or (at
-  your option) any later version.
+  This is free software; you can redistribute  it and/or modify it under the terms of
+  the GNU Lesser General Public License as published by the Free Software Foundation;
+  either version 3.0 of the License, or (at your option) any later version.
 
-  This library  is distributed in the  hope that it will  be useful, but
-  WITHOUT   ANY  WARRANTY;   without  even   the  implied   warranty  of
-  MERCHANTABILITY  or FITNESS  FOR A  PARTICULAR PURPOSE.   See  the GNU
-  Lesser General Public License for more details.
+  This library  is distributed in the  hope that it  will be useful, but  WITHOUT ANY
+  WARRANTY; without  even the implied  warranty of  MERCHANTABILITY or FITNESS  FOR A
+  PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
 
-  You  should have  received a  copy of  the GNU  Lesser  General Public
-  License along  with this library; if  not, write to  the Free Software
-  Foundation, Inc.,  59 Temple Place,  Suite 330, Boston,  MA 02111-1307
-  USA.
+  You should have received a copy of the GNU Lesser General Public License along with
+  this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+  Suite 330, Boston, MA 02111-1307 USA.
 
 */
 
@@ -35,64 +32,18 @@
 
 
 /** --------------------------------------------------------------------
- ** Base condition type.
- ** ----------------------------------------------------------------- */
-
-static void condition_final_base (cce_condition_t * C);
-static const char * condition_static_message_base (const cce_condition_t * C);
-
-/* Instance of condition descriptor.   The "parent" field is initialised
-   to  NULL   here  and  reinitialised   to  the  "root"  later   by  an
-   initialisation function. */
-static ccstr_descriptor_base_t descriptor_base = {
-  .descriptor.parent            = NULL,
-  .descriptor.delete            = NULL,
-  .descriptor.final             = condition_final_base,
-  .descriptor.static_message    = condition_static_message_base
-};
-
-const ccstr_descriptor_base_t * const ccstr_descriptor_base = &descriptor_base;
-
-void
-ccstr_condition_init_base (ccstr_condition_base_t * C CCSTR_UNUSED)
-/* Initialise an already allocated condition object. */
-{
-  return;
-}
-
-void
-condition_final_base (cce_condition_t * C CCSTR_UNUSED)
-/* Finalise a condition object; do not release memory. */
-{
-  return;
-}
-
-static const char *
-condition_static_message_base (const cce_condition_t * C CCSTR_UNUSED)
-{
-  return "CCStrings base exceptional condition";
-}
-
-bool
-ccstr_condition_is_base (const cce_condition_t * C)
-{
-  return cce_condition_is(C, &descriptor_base.descriptor);
-}
-
-
-/** --------------------------------------------------------------------
- ** Condition object: size overflow.
+ ** Condition object: buffer size overflow.
  ** ----------------------------------------------------------------- */
 
 static void condition_delete_buffer_size_overflow  (cce_condition_t * C);
 static void condition_final_buffer_size_overflow (cce_condition_t * C);
 static const char * condition_static_message_buffer_size_overflow (const cce_condition_t * C);
 
-/* Instance of condition descriptor.   The "parent" field is initialised
-   to  NULL   here  and  reinitialised   to  the  "root"  later   by  an
-   initialisation function. */
+/* Instance of  exceptional-condition descriptor.  The "parent"  field is initialised
+   to NULL here  and reinitialised to the "runtime error"  later by an initialisation
+   function. */
 static ccstr_descriptor_buffer_size_overflow_t descriptor_buffer_size_overflow = {
-  .descriptor.parent            = &descriptor_base.descriptor,
+  .descriptor.parent            = NULL,
   .descriptor.delete            = condition_delete_buffer_size_overflow,
   .descriptor.final             = condition_final_buffer_size_overflow,
   .descriptor.static_message    = condition_static_message_buffer_size_overflow
@@ -121,7 +72,7 @@ void
 ccstr_condition_init_buffer_size_overflow (ccstr_condition_buffer_size_overflow_t * C, ccstr_buffer_t * B, size_t required_len)
 /* Initialise an already allocated condition object. */
 {
-  ccstr_condition_init_base(&(C->base));
+  cce_condition_init_runtime_error(&(C->runtime_error));
   C->buffer		= B;
   C->required_len	= required_len;
 }
@@ -147,18 +98,18 @@ ccstr_condition_is_buffer_size_overflow (const cce_condition_t * C)
 
 
 /** --------------------------------------------------------------------
- ** Condition object: size overflow.
+ ** Condition object: buffer output incomplete.
  ** ----------------------------------------------------------------- */
 
 static void condition_delete_buffer_output_incomplete  (cce_condition_t * C);
 static void condition_final_buffer_output_incomplete (cce_condition_t * C);
 static const char * condition_static_message_buffer_output_incomplete (const cce_condition_t * C);
 
-/* Instance of condition descriptor.   The "parent" field is initialised
-   to  NULL   here  and  reinitialised   to  the  "root"  later   by  an
-   initialisation function. */
+/* Instance of  exceptional-condition descriptor.  The "parent"  field is initialised
+   to NULL here  and reinitialised to the "runtime error"  later by an initialisation
+   function. */
 static ccstr_descriptor_buffer_output_incomplete_t descriptor_buffer_output_incomplete = {
-  .descriptor.parent            = &descriptor_base.descriptor,
+  .descriptor.parent            = NULL,
   .descriptor.delete            = condition_delete_buffer_output_incomplete,
   .descriptor.final             = condition_final_buffer_output_incomplete,
   .descriptor.static_message    = condition_static_message_buffer_output_incomplete
@@ -187,7 +138,7 @@ void
 ccstr_condition_init_buffer_output_incomplete (ccstr_condition_buffer_output_incomplete_t * C, ccstr_buffer_t * B, size_t written_len)
 /* Initialise an already allocated condition object. */
 {
-  ccstr_condition_init_base(&(C->base));
+  cce_condition_init_runtime_error(&(C->runtime_error));
   C->buffer		= B;
   C->written_len	= written_len;
 }
@@ -219,7 +170,8 @@ ccstr_condition_is_buffer_output_incomplete (const cce_condition_t * C)
 void
 ccstr_library_init (void)
 {
-  cce_descriptor_set_root_parent(&descriptor_base.descriptor);
+  cce_descriptor_set_parent_to(cce_descriptor_runtime_error_t)(&descriptor_buffer_size_overflow.descriptor);
+  cce_descriptor_set_parent_to(cce_descriptor_runtime_error_t)(&descriptor_buffer_output_incomplete.descriptor);
 }
 
 /* end of file */

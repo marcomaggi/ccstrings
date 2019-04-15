@@ -33,14 +33,14 @@
 
 @c To be used as @value{COPYRIGHT_YEARS} whenever we need to include the
 @c list of copyright years.
-@set COPYRIGHT_YEARS            2017, 2018, 2019
+@set COPYRIGHT_YEARS            2017-2019
 
 @c ------------------------------------------------------------
 
-@set CCExceptionsVersion       0.8.0
-@set CCMemoryVersion           0.2.1
-@set CCStructsVersion          0.2.0
-@set CCTestsVersion            0.3.0
+@set CCExceptionsVersion       0.9.0
+@set CCMemoryVersion           0.2.2
+@set CCStructsVersion          0.3.0
+@set CCTestsVersion            0.4.1
 
 @c ------------------------------------------------------------
 
@@ -217,7 +217,7 @@ explanation of interface numbers as managed by @gnu{} Libtool @xref{Libtool vers
 Libtool's versioning system, libtool, Shared library support for @gnu{}}.
 
 
-@deftypefun {const char *} ccstr_version_string (void)
+@deftypefun {char const *} ccstr_version_string (void)
 Return a pointer to a statically allocated @asciiz{} string representing
 the interface version number.
 @end deftypefun
@@ -307,43 +307,9 @@ if (cce_location(L)) @{
 @end example
 
 @menu
-* conditions base::             Base exceptional conditions.
-* conditions size overflow::    Size overflow exceptional conditions.
-* conditions incomplete output:: Incomplete output exceptional conditions.
+* conditions size overflow::      Size overflow exceptional conditions.
+* conditions incomplete output::  Incomplete output exceptional conditions.
 @end menu
-
-@c page
-@node conditions base
-@section Base exceptional conditions
-
-
-@cindex Base exceptional condition
-@cindex Exceptional conditions, base
-
-
-@deftp {Struct Typedef} ccstr_descriptor_base_t
-Type of data structure representing the base exceptional--condition descriptor for all the
-conditions defined by @value{PACKAGE}.  It has the following public fields:
-
-@table @code
-@item cce_descriptor_t descriptor
-The condition descriptor's base values.
-@end table
-
-The parent of this type descriptor is the root type descriptor defined by the CCExceptions library;
-@xref{conditions root, CCExceptions, CCExceptions, ccexceptions, CCExceptions}.
-@end deftp
-
-
-@deftypevr {Dynamic Constant} {ccstr_descriptor_base_t const * const} ccstr_descriptor_base
-Pointer to the statically allocated exceptional--condition descriptor representing the base
-descriptor for all the conditions defined by @value{PACKAGE}.
-@end deftypevr
-
-
-@deftypefun bool ccstr_condition_is_base (cce_condition_t const * @var{C})
-Return @ctrue{} if @var{C} is of type @objtype{ccstr_descriptor_base_t}; otherwise return @cfalse{}.
-@end deftypefun
 
 @c page
 @node conditions size overflow
@@ -364,7 +330,7 @@ buffer @objtype{ccstr_buffer_t}.  It has the following public fields:
 The condition descriptor's base values.
 @end table
 
-The parent of this type descriptor is the one referenced by @code{ccstr_descriptor_base}.
+The parent of this type descriptor is @objtype{cce_descriptor_runtime_error_t}.
 @end deftp
 
 
@@ -440,7 +406,7 @@ output device and only some data is written.  It has the following public fields
 The condition descriptor's base values.
 @end table
 
-The parent of this type descriptor is the one referenced by @code{ccstr_descriptor_base}.
+The parent of this type descriptor is @objtype{cce_descriptor_runtime_error_t}.
 @end deftp
 
 
@@ -611,7 +577,7 @@ if (cce_location(L)) @{
 @end example
 
 
-@deftypefun void ccstr_buffer_format (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, @dots{})
+@deftypefun void ccstr_buffer_format (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, char const * @var{template}, @dots{})
 Format a string and append it to the buffer.  If there is not enough free room in the buffer:
 reallocate it enlarging the size.  If an error occurs reallocating: perform a non--local exit by
 jumping to @var{L}; in this case @var{B} is left untouched and its contents are still valid.
@@ -621,14 +587,14 @@ format is the same of the standard @cfunc{printf}.
 @end deftypefun
 
 
-@deftypefun void ccstr_buffer_vformat (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, const char * @var{template}, va_list @var{ap})
+@deftypefun void ccstr_buffer_vformat (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, char const * @var{template}, va_list @var{ap})
 Like @cfunc{ccstr_buffer_format}, but reads arguments from @var{ap}.  Internally @var{ap} is
 duplicated, so externally it is left untouched.  We can use this function as follows:
 
 @example
 void
 print (cce_location_t * L, ccstr_buffer_t * B,
-       const char * template, ...)
+       char const * template, ...)
 @{
   va_list       ap;
 

@@ -130,9 +130,6 @@ typedef struct ccstr_buffer_t			ccstr_buffer_t;
 typedef struct ccstr_vtable_t			ccstr_vtable_t;
 typedef struct ccstr_t				ccstr_t;
 
-typedef struct ccstr_descriptor_base_t		ccstr_descriptor_base_t;
-typedef struct ccstr_condition_base_t		ccstr_condition_base_t;
-
 typedef struct ccstr_descriptor_buffer_size_overflow_t		ccstr_descriptor_buffer_size_overflow_t;
 typedef struct ccstr_condition_buffer_size_overflow_t		ccstr_condition_buffer_size_overflow_t;
 
@@ -385,27 +382,12 @@ ccstr_target_ascii (ccstr_t * S)
  ** Condition objects definitions.
  ** ----------------------------------------------------------------- */
 
-struct ccstr_descriptor_base_t {
-  cce_descriptor_t      descriptor;
-};
-
-struct ccstr_condition_base_t {
-  cce_condition_root_t  root;
-};
-
-ccstr_decl const ccstr_descriptor_base_t * const ccstr_descriptor_base;
-
-ccstr_decl void ccstr_condition_init_base (ccstr_condition_base_t * C);
-ccstr_decl bool ccstr_condition_is_base (const cce_condition_t * C);
-
-/* ------------------------------------------------------------------ */
-
 struct ccstr_descriptor_buffer_size_overflow_t {
   cce_descriptor_t      descriptor;
 };
 
 struct ccstr_condition_buffer_size_overflow_t {
-  ccstr_condition_base_t	base;
+  cce_condition_runtime_error_t	runtime_error;
   ccstr_buffer_t *		buffer;
   size_t			required_len;
 };
@@ -423,7 +405,7 @@ struct ccstr_descriptor_buffer_output_incomplete_t {
 };
 
 struct ccstr_condition_buffer_output_incomplete_t {
-  ccstr_condition_base_t	base;
+  cce_condition_runtime_error_t	runtime_error;
   ccstr_buffer_t *		buffer;
   size_t			written_len;
 };
