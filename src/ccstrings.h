@@ -379,11 +379,14 @@ ccstr_target_ascii (ccstr_t * S)
 
 
 /** --------------------------------------------------------------------
- ** Condition objects definitions.
+ ** Exceptional-condition object: buffer size overflow.
  ** ----------------------------------------------------------------- */
 
+typedef struct ccstr_descriptor_buffer_size_overflow_t	ccstr_descriptor_buffer_size_overflow_t;
+typedef struct ccstr_condition_buffer_size_overflow_t	ccstr_condition_buffer_size_overflow_t;
+
 struct ccstr_descriptor_buffer_size_overflow_t {
-  cce_descriptor_t      descriptor;
+  cce_descriptor_t	descriptor;
 };
 
 struct ccstr_condition_buffer_size_overflow_t {
@@ -392,16 +395,32 @@ struct ccstr_condition_buffer_size_overflow_t {
   size_t			required_len;
 };
 
-ccstr_decl const ccstr_descriptor_buffer_size_overflow_t * const ccstr_descriptor_buffer_size_overflow;
-
-ccstr_decl cce_condition_t * ccstr_condition_new_buffer_size_overflow (cce_location_t * L, ccstr_buffer_t * B, size_t required_len);
-ccstr_decl void ccstr_condition_init_buffer_size_overflow (ccstr_condition_buffer_size_overflow_t * C, ccstr_buffer_t * B, size_t required_len);
-ccstr_decl bool ccstr_condition_is_buffer_size_overflow (const cce_condition_t * C);
+ccstr_decl void cce_descriptor_set_parent_to(ccstr_descriptor_buffer_size_overflow_t) (cce_descriptor_t * const D)
+  __attribute__((__nonnull__(1)));
 
 /* ------------------------------------------------------------------ */
 
+ccstr_decl void ccstr_condition_init_buffer_size_overflow (cce_destination_t L,
+							   ccstr_condition_buffer_size_overflow_t * C,
+							   ccstr_buffer_t * B, size_t required_len)
+  __attribute__((__nonnull__(1,2)));
+
+ccstr_decl cce_condition_t const * ccstr_condition_new_buffer_size_overflow (cce_destination_t L, ccstr_buffer_t * B, size_t required_len)
+  __attribute__((__nonnull__(1,2)));
+
+ccstr_decl bool ccstr_condition_is_buffer_size_overflow (cce_condition_t const * C)
+  __attribute__((__pure__,__nonnull__(1)));
+
+
+/** --------------------------------------------------------------------
+ ** Exceptional-condition object: buffer output incomplete.
+ ** ----------------------------------------------------------------- */
+
+typedef struct ccstr_descriptor_buffer_output_incomplete_t	ccstr_descriptor_buffer_output_incomplete_t;
+typedef struct ccstr_condition_buffer_output_incomplete_t	ccstr_condition_buffer_output_incomplete_t;
+
 struct ccstr_descriptor_buffer_output_incomplete_t {
-  cce_descriptor_t      descriptor;
+  cce_descriptor_t	descriptor;
 };
 
 struct ccstr_condition_buffer_output_incomplete_t {
@@ -410,12 +429,21 @@ struct ccstr_condition_buffer_output_incomplete_t {
   size_t			written_len;
 };
 
-ccstr_decl const ccstr_descriptor_buffer_output_incomplete_t * const ccstr_descriptor_buffer_output_incomplete;
+ccstr_decl void cce_descriptor_set_parent_to(ccstr_descriptor_buffer_output_incomplete_t) (cce_descriptor_t * const D)
+  __attribute__((__nonnull__(1)));
 
-ccstr_decl cce_condition_t * ccstr_condition_new_buffer_output_incomplete (cce_location_t * L, ccstr_buffer_t * B, size_t written_len);
-ccstr_decl void ccstr_condition_init_buffer_output_incomplete (ccstr_condition_buffer_output_incomplete_t * C,
-							       ccstr_buffer_t * B, size_t written_len);
-ccstr_decl bool ccstr_condition_is_buffer_output_incomplete (const cce_condition_t * C);
+/* ------------------------------------------------------------------ */
+
+ccstr_decl void ccstr_condition_init_buffer_output_incomplete (cce_destination_t L,
+							       ccstr_condition_buffer_output_incomplete_t * C,
+							       ccstr_buffer_t * B, size_t written_len)
+  __attribute__((__nonnull__(1,2)));
+
+ccstr_decl cce_condition_t const * ccstr_condition_new_buffer_output_incomplete (cce_destination_t L, ccstr_buffer_t * B, size_t written_len)
+  __attribute__((__nonnull__(1,2)));
+
+ccstr_decl bool ccstr_condition_is_buffer_output_incomplete (cce_condition_t const * C)
+  __attribute__((__pure__,__nonnull__(1)));
 
 
 /** --------------------------------------------------------------------

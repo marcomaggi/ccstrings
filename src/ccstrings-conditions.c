@@ -32,134 +32,192 @@
 
 
 /** --------------------------------------------------------------------
- ** Condition object: buffer size overflow.
+ ** Exceptional-condition object: buffer size overflow.
  ** ----------------------------------------------------------------- */
 
-static void condition_delete_buffer_size_overflow  (cce_condition_t * C);
-static void condition_final_buffer_size_overflow (cce_condition_t * C);
-static const char * condition_static_message_buffer_size_overflow (const cce_condition_t * C);
+static cce_condition_delete_fun_t		ccstr_condition_delete_buffer_size_overflow;
+static cce_condition_static_message_fun_t	ccstr_condition_static_message_buffer_size_overflow;
 
-/* Instance of  exceptional-condition descriptor.  The "parent"  field is initialised
-   to NULL here  and reinitialised to the "runtime error"  later by an initialisation
-   function. */
-static ccstr_descriptor_buffer_size_overflow_t descriptor_buffer_size_overflow = {
-  .descriptor.parent            = NULL,
-  .descriptor.delete            = condition_delete_buffer_size_overflow,
-  .descriptor.final             = condition_final_buffer_size_overflow,
-  .descriptor.static_message    = condition_static_message_buffer_size_overflow
+static ccstr_descriptor_buffer_size_overflow_t ccstr_descriptor_buffer_size_overflow = {
+  /* This "parent" field is set below by the module initialisation function. */
+  .descriptor.parent		= NULL,
+  .descriptor.delete		= ccstr_condition_delete_buffer_size_overflow,
+  .descriptor.final		= NULL,
+  .descriptor.static_message	= ccstr_condition_static_message_buffer_size_overflow
 };
 
-const ccstr_descriptor_buffer_size_overflow_t * const ccstr_descriptor_buffer_size_overflow = &descriptor_buffer_size_overflow;
-
-cce_condition_t *
-ccstr_condition_new_buffer_size_overflow (cce_location_t * L, ccstr_buffer_t * B, size_t required_len)
-/* Allocate a condition object and initialise it. */
+void
+cce_descriptor_set_parent_to(ccstr_descriptor_buffer_size_overflow_t) (cce_descriptor_t * const D)
 {
-  ccstr_condition_buffer_size_overflow_t *	C = cce_sys_malloc(L, sizeof(ccstr_condition_buffer_size_overflow_t));
-  cce_condition_init((cce_condition_t *)C, &descriptor_buffer_size_overflow.descriptor);
-  ccstr_condition_init_buffer_size_overflow(C, B, required_len);
-  return (cce_condition_t *) C;
+  D->parent = cce_descriptor_pointer(ccstr_descriptor_buffer_size_overflow);
 }
 
+/* ------------------------------------------------------------------ */
+
 void
-condition_delete_buffer_size_overflow (cce_condition_t * C)
-/* Release the condition object memory. */
+ccstr_condition_delete_buffer_size_overflow (cce_condition_t * C)
+/* The  delete  function  is  called  automatically  when  the  client  code  applies
+   "cce_condition_delete()" to the argument C.   Here we release memory allocated for
+   the condition object. */
 {
   free(C);
 }
 
+char const *
+ccstr_condition_static_message_buffer_size_overflow (cce_condition_t const * C CCE_UNUSED)
+{
+  return "requested new size of CCStrings buffer too big";
+}
+
+/* ------------------------------------------------------------------ */
+
 void
-ccstr_condition_init_buffer_size_overflow (ccstr_condition_buffer_size_overflow_t * C, ccstr_buffer_t * B, size_t required_len)
-/* Initialise an already allocated condition object. */
+ccstr_condition_init_buffer_size_overflow (cce_destination_t L CCSTR_UNUSED, ccstr_condition_buffer_size_overflow_t * C,
+					   ccstr_buffer_t * B, size_t required_len)
+/* This initialisation function must be called both by:
+ *
+ * - The constructor function of this object type.
+ *
+ * - The initialisation functions of object types derived from this type.
+ *
+ * Here we call  the parent's initialisation function; then we  initialise the fields
+ * of this type.
+ */
 {
   cce_condition_init_runtime_error(&(C->runtime_error));
   C->buffer		= B;
   C->required_len	= required_len;
 }
 
-void
-condition_final_buffer_size_overflow (cce_condition_t * C CCE_UNUSED)
-/* Finalise a condition object; do not release memory. */
+cce_condition_t const *
+ccstr_condition_new_buffer_size_overflow (cce_destination_t upper_L, ccstr_buffer_t * B, size_t required_len)
+/* This constructor function is the public  interface to the constructor of condition
+ * objects of type "ccstr_condition_buffer_size_overflow_t".
+ *
+ * Here we:
+ *
+ * 1. Allocate memory for the condition object itself.
+ *
+ * 2. Initialise the descriptor field by calling "cce_condition_init()".
+ *
+ * 3. Call the initialisation function for this type.
+ */
 {
-  return;
-}
+  cce_location_t	L[1];
+  cce_error_handler_t	C_H[1];
 
-static const char *
-condition_static_message_buffer_size_overflow (const cce_condition_t * C CCE_UNUSED)
-{
-  return "requested new size of CCStrings buffer too big";
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccstr_condition_buffer_size_overflow_t * C = cce_sys_malloc_guarded(L, C_H, sizeof(ccstr_condition_buffer_size_overflow_t));
+
+    cce_condition_init((cce_condition_t *) C, cce_descriptor_pointer(ccstr_descriptor_buffer_size_overflow));
+    ccstr_condition_init_buffer_size_overflow(L, C, B, required_len);
+
+    cce_run_body_handlers(L);
+    return (cce_condition_t const *) C;
+  }
 }
 
 bool
-ccstr_condition_is_buffer_size_overflow (const cce_condition_t * C)
+ccstr_condition_is_buffer_size_overflow (cce_condition_t const * C)
 {
-  return cce_condition_is(C, &descriptor_buffer_size_overflow.descriptor);
+  return cce_condition_is(C, cce_descriptor_pointer(ccstr_descriptor_buffer_size_overflow));
 }
 
 
 /** --------------------------------------------------------------------
- ** Condition object: buffer output incomplete.
+ ** Exceptional-condition object: buffer output incomplete.
  ** ----------------------------------------------------------------- */
 
-static void condition_delete_buffer_output_incomplete  (cce_condition_t * C);
-static void condition_final_buffer_output_incomplete (cce_condition_t * C);
-static const char * condition_static_message_buffer_output_incomplete (const cce_condition_t * C);
+static cce_condition_delete_fun_t		ccstr_condition_delete_buffer_output_incomplete;
+static cce_condition_static_message_fun_t	ccstr_condition_static_message_buffer_output_incomplete;
 
-/* Instance of  exceptional-condition descriptor.  The "parent"  field is initialised
-   to NULL here  and reinitialised to the "runtime error"  later by an initialisation
-   function. */
-static ccstr_descriptor_buffer_output_incomplete_t descriptor_buffer_output_incomplete = {
-  .descriptor.parent            = NULL,
-  .descriptor.delete            = condition_delete_buffer_output_incomplete,
-  .descriptor.final             = condition_final_buffer_output_incomplete,
-  .descriptor.static_message    = condition_static_message_buffer_output_incomplete
+static ccstr_descriptor_buffer_output_incomplete_t ccstr_descriptor_buffer_output_incomplete = {
+  /* This "parent" field is set below by the module initialisation function. */
+  .descriptor.parent		= NULL,
+  .descriptor.delete		= ccstr_condition_delete_buffer_output_incomplete,
+  .descriptor.final		= NULL,
+  .descriptor.static_message	= ccstr_condition_static_message_buffer_output_incomplete
 };
 
-const ccstr_descriptor_buffer_output_incomplete_t * const ccstr_descriptor_buffer_output_incomplete = &descriptor_buffer_output_incomplete;
-
-cce_condition_t *
-ccstr_condition_new_buffer_output_incomplete (cce_location_t * L, ccstr_buffer_t * B, size_t written_len)
-/* Allocate a condition object and initialise it. */
+void
+cce_descriptor_set_parent_to(ccstr_descriptor_buffer_output_incomplete_t) (cce_descriptor_t * const D)
 {
-  ccstr_condition_buffer_output_incomplete_t *	C = cce_sys_malloc(L, sizeof(ccstr_condition_buffer_output_incomplete_t));
-  cce_condition_init((cce_condition_t *)C, &descriptor_buffer_output_incomplete.descriptor);
-  ccstr_condition_init_buffer_output_incomplete(C, B, written_len);
-  return (cce_condition_t *) C;
+  D->parent = cce_descriptor_pointer(ccstr_descriptor_buffer_output_incomplete);
 }
 
+/* ------------------------------------------------------------------ */
+
 void
-condition_delete_buffer_output_incomplete (cce_condition_t * C)
-/* Release the condition object memory. */
+ccstr_condition_delete_buffer_output_incomplete (cce_condition_t * C)
+/* The  delete  function  is  called  automatically  when  the  client  code  applies
+   "cce_condition_delete()" to the argument C.   Here we release memory allocated for
+   the condition object. */
 {
   free(C);
 }
 
+char const *
+ccstr_condition_static_message_buffer_output_incomplete (cce_condition_t const * C CCE_UNUSED)
+{
+  return "writing buffer data to output device";
+}
+
+/* ------------------------------------------------------------------ */
+
 void
-ccstr_condition_init_buffer_output_incomplete (ccstr_condition_buffer_output_incomplete_t * C, ccstr_buffer_t * B, size_t written_len)
-/* Initialise an already allocated condition object. */
+ccstr_condition_init_buffer_output_incomplete (cce_destination_t L CCSTR_UNUSED, ccstr_condition_buffer_output_incomplete_t * C,
+					   ccstr_buffer_t * B, size_t written_len)
+/* This initialisation function must be called both by:
+ *
+ * - The constructor function of this object type.
+ *
+ * - The initialisation functions of object types derived from this type.
+ *
+ * Here we call  the parent's initialisation function; then we  initialise the fields
+ * of this type.
+ */
 {
   cce_condition_init_runtime_error(&(C->runtime_error));
   C->buffer		= B;
   C->written_len	= written_len;
 }
 
-void
-condition_final_buffer_output_incomplete (cce_condition_t * C CCE_UNUSED)
-/* Finalise a condition object; do not release memory. */
+cce_condition_t const *
+ccstr_condition_new_buffer_output_incomplete (cce_destination_t upper_L, ccstr_buffer_t * B, size_t written_len)
+/* This constructor function is the public  interface to the constructor of condition
+ * objects of type "ccstr_condition_buffer_output_incomplete_t".
+ *
+ * Here we:
+ *
+ * 1. Allocate memory for the condition object itself.
+ *
+ * 2. Initialise the descriptor field by calling "cce_condition_init()".
+ *
+ * 3. Call the initialisation function for this type.
+ */
 {
-  return;
-}
+  cce_location_t	L[1];
+  cce_error_handler_t	C_H[1];
 
-static const char *
-condition_static_message_buffer_output_incomplete (const cce_condition_t * C CCE_UNUSED)
-{
-  return "writing buffer data to output device";
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccstr_condition_buffer_output_incomplete_t * C = cce_sys_malloc_guarded(L, C_H, sizeof(ccstr_condition_buffer_output_incomplete_t));
+
+    cce_condition_init((cce_condition_t *) C, cce_descriptor_pointer(ccstr_descriptor_buffer_output_incomplete));
+    ccstr_condition_init_buffer_output_incomplete(L, C, B, written_len);
+
+    cce_run_body_handlers(L);
+    return (cce_condition_t const *) C;
+  }
 }
 
 bool
-ccstr_condition_is_buffer_output_incomplete (const cce_condition_t * C)
+ccstr_condition_is_buffer_output_incomplete (cce_condition_t const * C)
 {
-  return cce_condition_is(C, &descriptor_buffer_output_incomplete.descriptor);
+  return cce_condition_is(C, cce_descriptor_pointer(ccstr_descriptor_buffer_output_incomplete));
 }
 
 
@@ -170,8 +228,8 @@ ccstr_condition_is_buffer_output_incomplete (const cce_condition_t * C)
 void
 ccstr_library_init (void)
 {
-  cce_descriptor_set_parent_to(cce_descriptor_runtime_error_t)(&descriptor_buffer_size_overflow.descriptor);
-  cce_descriptor_set_parent_to(cce_descriptor_runtime_error_t)(&descriptor_buffer_output_incomplete.descriptor);
+  cce_descriptor_set_parent_to(cce_descriptor_runtime_error_t)(cce_descriptor_pointer(ccstr_descriptor_buffer_size_overflow));
+  cce_descriptor_set_parent_to(cce_descriptor_runtime_error_t)(cce_descriptor_pointer(ccstr_descriptor_buffer_output_incomplete));
 }
 
 /* end of file */

@@ -6,6 +6,7 @@
 
 @include version.texi
 @include macros.texi
+@include ccexceptions-macros.texi
 
 @c page
 @c ------------------------------------------------------------
@@ -320,27 +321,21 @@ if (cce_location(L)) @{
 @cindex Exceptional conditions, size overflow
 
 
-@deftp {Struct Typedef} ccstr_descriptor_buffer_size_overflow_t
-Type of data structure representing the exceptional--condition descriptor for the ``buffer size
-overflow'' errors; this exception type is used whenever we attempt to allocate too much memory for a
-buffer @objtype{ccstr_buffer_t}.  It has the following public fields:
-
-@table @code
-@item cce_descriptor_t descriptor
-The condition descriptor's base values.
-@end table
-
-The parent of this type descriptor is @objtype{cce_descriptor_runtime_error_t}.
-@end deftp
+The @dfn{buffer size overflow} exceptional--condition object--type has the purpose of describing an
+exceptional--condition caused by an attempt to allocate a buffer too big.
 
 
-@deftp {Struct Typedef} ccstr_condition_buffer_size_overflow_t
-Type of data structure representing an exceptional--condition object for a ``buffer size overflow''
-error.  It has the following public fields:
+@CCEDescriptorTypedef{ccstr,buffer_size_overflow,cce_descriptor_runtime_error_t}
+
+
+@deftp {Struct Typedef} @CCEConditionObjectType{ccstr,buffer_size_overflow}
+Type of data structure representing an exceptional--condition object.  It has the following public
+fields:
 
 @table @code
 @item ccstr_buffer_t * buffer
-Pointer to the buffer.
+Pointer to the buffer.  The exceptional--condition object instance @strong{does not} own this
+buffer: it responsibility of the user to delete the buffer when appropriate.
 
 @item size_t required_len
 The number of free bytes that were requested in the buffer.
@@ -348,44 +343,13 @@ The number of free bytes that were requested in the buffer.
 @end deftp
 
 
-@deftypevr {Dynamic Constant} {ccstr_descriptor_buffer_size_overflow_t const * const} ccstr_descriptor_buffer_size_overflow
-Pointer to the statically allocated exceptional--condition descriptor.
-@end deftypevr
+@CCEConditionObjectNew{ccstr,buffer_size_overflow,{ccstr_buffer_t * @var{B}, size_t @var{required_len}}}
 
 
-@deftypefun {cce_condition_t const *} ccstr_condition_new_buffer_size_overflow (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{required_len})
-Allocate and initialise a new condition object.  If an error occurs allocating the structure: an
-exception is raised by performing a non--local exit to @var{L}.
-@end deftypefun
+@CCEConditionObjectPredicate{ccstr,buffer_size_overflow}
 
 
-@deftypefun void ccstr_condition_init_buffer_size_overflow (ccstr_condition_buffer_size_overflow_t * @var{C}, ccstr_buffer_t * @var{B}, size_t @var{required_len})
-Initialise an already allocated condition object.
-@end deftypefun
-
-
-@deftypefun bool ccstr_condition_is_buffer_size_overflow (cce_condition_t const * @var{C})
-Return @ctrue{} if @var{C} if of type @code{ccstr_descriptor_buffer_size_overflow}; otherwise return
-@cfalse{}.
-@end deftypefun
-
-
-To catch this exceptional condition we can do:
-
-@smallexample
-cce_location_t        L[1];
-
-if (cce_location(L)) @{
-  if (ccstr_condition_is_buffer_size_overflow(cce_condition(L))) @{
-    CCE_PC(ccstr_condition_buffer_size_overflow_t, C, cce_condition(L));
-    do_something_with(C);
-  @}
-  cce_run_catch_handlers_final(L);
-@} else @{
-  do_something(L);
-  cce_run_body_handlers(L);
-@}
-@end smallexample
+@CCEConditionSubtypingFacilities{ccstr,buffer_size_overflow,{ccstr_buffer_t * @var{B}, size_t @var{required_len}}}
 
 @c page
 @node conditions incomplete output
@@ -396,23 +360,17 @@ if (cce_location(L)) @{
 @cindex Exceptional conditions, incomplete output
 
 
-@deftp {Struct Typedef} ccstr_descriptor_buffer_output_incomplete_t
-Type of data structure representing the exceptional--condition descriptor for the ``buffer
-incomplete output'' errors; this exception type is used whenever we attempt to write a buffer to an
-output device and only some data is written.  It has the following public fields:
-
-@table @code
-@item cce_descriptor_t descriptor
-The condition descriptor's base values.
-@end table
-
-The parent of this type descriptor is @objtype{cce_descriptor_runtime_error_t}.
-@end deftp
+The @dfn{buffer incomplete output} exceptional--condition object--type has the purpose of describing
+an exceptional--condition caused by an attempt to write a buffer to an output device and only some
+of the data is written.
 
 
-@deftp {Struct Typedef} ccstr_condition_buffer_output_incomplete_t
-Type of data structure representing an exceptional--condition object for a ``buffer incomplete
-output error.  It has the following public fields:
+@CCEDescriptorTypedef{ccstr,buffer_incomplete_output,cce_descriptor_runtime_error_t}
+
+
+@deftp {Struct Typedef} @CCEConditionObjectType{ccstr,buffer_incomplete_output}
+Type of data structure representing an exceptional--condition object.  It has the following public
+fields:
 
 @table @code
 @item ccstr_buffer_t * buffer
@@ -424,44 +382,13 @@ The number of bytes that were written to the device.
 @end deftp
 
 
-@deftypevr {Dynamic Constant} {ccstr_descriptor_buffer_output_incomplete_t const * const} ccstr_descriptor_buffer_output_incomplete
-Pointer to the statically allocated exceptional--condition descriptor.
-@end deftypevr
+@CCEConditionObjectNew{ccstr,buffer_incomplete_output,{ccstr_buffer_t * @var{B}, size_t @var{written_len}}}
 
 
-@deftypefun {cce_condition_t const *} ccstr_condition_new_buffer_output_incomplete (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{written_len})
-Allocate and initialise a new condition object.  If an error occurs allocating the structure: an
-exception is raised by performing a non--local exit to @var{L}.
-@end deftypefun
+@CCEConditionObjectPredicate{ccstr,buffer_incomplete_output}
 
 
-@deftypefun void ccstr_condition_init_buffer_output_incomplete (ccstr_condition_buffer_output_incomplete_t * @var{C}, ccstr_buffer_t * @var{B}, size_t @var{written_len})
-Initialise an already allocated condition object.
-@end deftypefun
-
-
-@deftypefun bool ccstr_condition_is_buffer_output_incomplete (cce_condition_t const * @var{C})
-Return @ctrue{} if @var{C} if of type @code{ccstr_descriptor_buffer_output_incomplete}; otherwise
-return @cfalse{}.
-@end deftypefun
-
-
-To catch this exceptional condition we can do:
-
-@smallexample
-cce_location_t        L[1];
-
-if (cce_location(L)) @{
-  if (ccstr_condition_is_buffer_output_incomplete(cce_condition(L))) @{
-    CCE_PC(ccstr_condition_buffer_output_incomplete_t, C, cce_condition(L));
-    do_something_with(C);
-  @}
-  cce_run_catch_handlers_final(L);
-@} else @{
-  do_something(L);
-  cce_run_body_handlers(L);
-@}
-@end smallexample
+@CCEConditionSubtypingFacilities{ccstr,buffer_incomplete_output,{ccstr_buffer_t * @var{B}, size_t @var{written_len}}}
 
 @c page
 @node buffers
