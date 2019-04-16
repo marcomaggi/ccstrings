@@ -349,7 +349,7 @@ The number of free bytes that were requested in the buffer.
 @CCEConditionObjectPredicate{ccstr,buffer_size_overflow}
 
 
-@CCEConditionSubtypingFacilities{ccstr,buffer_size_overflow,{ccstr_buffer_t * @var{B}, size_t @var{required_len}}}
+@CCEConditionSubtypingFacilitiesFailing{ccstr,buffer_size_overflow,{ccstr_buffer_t * @var{B}, size_t @var{required_len}}}
 
 @c page
 @node conditions incomplete output
@@ -388,7 +388,7 @@ The number of bytes that were written to the device.
 @CCEConditionObjectPredicate{ccstr,buffer_incomplete_output}
 
 
-@CCEConditionSubtypingFacilities{ccstr,buffer_incomplete_output,{ccstr_buffer_t * @var{B}, size_t @var{written_len}}}
+@CCEConditionSubtypingFacilitiesFailing{ccstr,buffer_incomplete_output,{ccstr_buffer_t * @var{B}, size_t @var{written_len}}}
 
 @c page
 @node buffers
