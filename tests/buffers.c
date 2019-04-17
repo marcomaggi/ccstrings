@@ -35,28 +35,216 @@
 
 
 /** --------------------------------------------------------------------
- ** Constructors and destructors.
+ ** Convenience definitions.
+ ** ----------------------------------------------------------------- */
+
+typedef struct envelope_t	envelope_t;
+
+struct envelope_t {
+  ccstr_buffer_t	B[1];
+};
+
+void
+ccname_init(envelope_t) (cce_destination_t upper_L, envelope_t * E)
+{
+  cce_location_t	L[1];
+  cce_error_handler_t	B_H[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccname_init(ccstr_buffer_t)(L, E->B, 64);
+    ccstr_init_and_register_buffer_handler(L, B_H, E->B);
+
+    /* Initialise the other fields of E, if any. */
+    cce_run_body_handlers(L);
+  }
+}
+
+void
+ccname_init(envelope_t, from_buffer)
+  (cce_destination_t L, envelope_t * E, ccstr_buffer_t const * B)
+{
+  ccname_init(ccstr_buffer_t, copy)(L, E->B, B);
+}
+
+void
+ccname_final(envelope_t) (envelope_t * E)
+{
+  ccname_final(ccstr_buffer_t)(E->B);
+}
+
+void
+ccname_init(envelope_t, clean)
+  (cce_destination_t L, cce_clean_handler_t * E_H, envelope_t * E)
+{
+  ccname_init(envelope_t)(L, E);
+  cce_init_and_register_handler
+    (L, E_H, cce_default_clean_handler_function,
+     cce_resource_pointer(E),
+     cce_resource_destructor(ccname_final(envelope_t)));
+}
+
+void
+ccname_init(envelope_t, error)
+  (cce_destination_t L, cce_error_handler_t * E_H, envelope_t * E)
+{
+  ccname_init(envelope_t)(L, E);
+  cce_init_and_register_handler
+    (L, E_H, cce_default_error_handler_function,
+     cce_resource_pointer(E),
+     cce_resource_destructor(ccname_final(envelope_t)));
+}
+
+
+/** --------------------------------------------------------------------
+ ** Initialisation and finalisation: embedded struct instances, plain constructors.
  ** ----------------------------------------------------------------- */
 
 void
 test_1_1 (cce_destination_t upper_L)
-/* Test explicit buffer initialisation and finalisation. */
+/* Plain constructor, explicit clean handler usage. */
 {
   cce_location_t	L[1];
+  cce_clean_handler_t	B_H[1];
   ccstr_buffer_t	B[1];
 
   if (cce_location(L)) {
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
-    ccstr_buffer_init(L, B, 123);
-    ccstr_buffer_final(B);
+    ccname_init(ccstr_buffer_t)(L, B, 64);
+    ccstr_init_and_register_buffer_handler(L, B_H, B);
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
     cce_run_body_handlers(L);
   }
 }
 
 void
 test_1_2 (cce_destination_t upper_L)
-/* Test implicit buffer finalisation with a CCExceptions handler. */
+/* Plain constructor, explicit error handler usage. */
+{
+  cce_location_t	L[1];
+  cce_error_handler_t	B_H[1];
+  ccstr_buffer_t	B[1];
+
+  if (cce_location(L)) {
+    if (cctests_condition_is_signal_1(cce_condition(L))) {
+      cce_run_catch_handlers_final(L);
+    } else {
+      cce_run_catch_handlers_raise(L, upper_L);
+    }
+  } else {
+    ccname_init(ccstr_buffer_t)(L, B, 64);
+    ccstr_init_and_register_buffer_handler(L, B_H, B);
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+    cce_raise(L, cctests_condition_new_signal_1());
+  }
+}
+
+void
+test_1_3 (cce_destination_t upper_L)
+/* Plain constructor, plain copy constructor, explicit clean handlers usage. */
+{
+  cce_location_t	L[1];
+  ccstr_buffer_t	src[1], dst[1];
+  cce_clean_handler_t	src_H[1], dst_H[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccname_init(ccstr_buffer_t)(L, src, 64);
+    ccstr_init_and_register_buffer_handler(L, src_H, src);
+    ccstr_buffer_format(L, src, "These are the buffer's contents (%s).\n", __func__);
+
+    ccname_init(ccstr_buffer_t, copy)(L, dst, src);
+    ccstr_init_and_register_buffer_handler(L, dst_H, dst);
+
+    ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+    ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+    cce_run_body_handlers(L);
+  }
+}
+
+void
+test_1_4 (cce_destination_t upper_L)
+/* Plain constructor, plain copy constructor, explicit error handlers usage. */
+{
+  cce_location_t	L[1];
+  ccstr_buffer_t	src[1], dst[1];
+  cce_error_handler_t	src_H[1], dst_H[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccname_init(ccstr_buffer_t)(L, src, 64);
+    ccstr_init_and_register_buffer_handler(L, src_H, src);
+    ccstr_buffer_format(L, src, "These are the buffer's contents (%s).\n", __func__);
+
+    ccname_init(ccstr_buffer_t, copy)(L, dst, src);
+    ccstr_init_and_register_buffer_handler(L, dst_H, dst);
+
+    ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+    ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+    cce_run_body_handlers(L);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+
+void
+test_1_5 (cce_destination_t upper_L)
+/* Enveloped buffer, clean handler. */
+{
+  cce_location_t	L[1];
+  cce_clean_handler_t	E_H[1];
+  envelope_t		E[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccname_init(envelope_t, clean)(L, E_H, E);
+    ccstr_buffer_format(L, E->B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(E->B));
+    cce_run_body_handlers(L);
+  }
+}
+
+void
+test_1_6 (cce_destination_t upper_L)
+/* Enveloped buffer, error handler. */
+{
+  cce_location_t	L[1];
+  cce_error_handler_t	E_H[1];
+  envelope_t		E[1];
+
+  if (cce_location(L)) {
+    if (cctests_condition_is_signal_1(cce_condition(L))) {
+      cce_run_catch_handlers_final(L);
+    } else {
+      cce_run_catch_handlers_raise(L, upper_L);
+    }
+  } else {
+    ccname_init(envelope_t, error)(L, E_H, E);
+    ccstr_buffer_format(L, E->B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(E->B));
+    cce_raise(L, cctests_condition_new_signal_1());
+  }
+}
+
+
+/** --------------------------------------------------------------------
+ ** Initialisation and finalisation: embedded struct instances, guarded constructors.
+ ** ----------------------------------------------------------------- */
+
+void
+test_2_1 (cce_destination_t upper_L)
+/* Guarded initialisation, finalisation with clean handler. */
 {
   cce_location_t	L[1];
   ccstr_buffer_t	B[1];
@@ -65,9 +253,259 @@ test_1_2 (cce_destination_t upper_L)
   if (cce_location(L)) {
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
-    ccstr_buffer_init(L, B, 123);
-    ccstr_clean_handler_buffer_init(L, B_H, B);
+    ccname_init(ccstr_buffer_t, clean)(L, B_H, B, 64);
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
     cce_run_body_handlers(L);
+  }
+}
+
+void
+test_2_2 (cce_destination_t upper_L)
+/* Guarded initialisation, finalisation with error handler. */
+{
+  cce_location_t	L[1];
+  ccstr_buffer_t	B[1];
+  cce_error_handler_t	B_H[1];
+
+  if (cce_location(L)) {
+    if (cctests_condition_is_signal_1(cce_condition(L))) {
+      cce_run_catch_handlers_final(L);
+    } else {
+      cce_run_catch_handlers_raise(L, upper_L);
+    }
+  } else {
+    ccname_init(ccstr_buffer_t, error)(L, B_H, B, 64);
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+    cce_raise(L, cctests_condition_new_signal_1());
+  }
+}
+
+/* ------------------------------------------------------------------ */
+
+void
+test_2_3 (cce_destination_t upper_L)
+/* Initialisation, copy initialisation, finalisation with clean handlers. */
+{
+  cce_location_t	L[1];
+  ccstr_buffer_t	src[1], dst[1];
+  cce_clean_handler_t	src_H[1], dst_H[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccname_init(ccstr_buffer_t,       clean)(L, src_H, src, 64);
+    ccstr_buffer_format(L, src, "These are the buffer's contents (%s).\n", __func__);
+    ccname_init(ccstr_buffer_t, copy, clean)(L, dst_H, dst, src);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+    cce_run_body_handlers(L);
+  }
+}
+
+void
+test_2_4 (cce_destination_t upper_L)
+/* Initialisation, copy initialisation, finalisation with error handlers. */
+{
+  cce_location_t	L[1];
+  ccstr_buffer_t	src[1], dst[1];
+  cce_error_handler_t	src_H[1], dst_H[1];
+
+  if (cce_location(L)) {
+    if (cctests_condition_is_signal_1(cce_condition(L))) {
+      cce_run_catch_handlers_final(L);
+    } else {
+      cce_run_catch_handlers_raise(L, upper_L);
+    }
+  } else {
+    ccname_init(ccstr_buffer_t,       error)(L, src_H, src, 64);
+    ccstr_buffer_format(L, src, "These are the buffer's contents (%s).\n", __func__);
+    ccname_init(ccstr_buffer_t, copy, error)(L, dst_H, dst, src);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+    cce_raise(L, cctests_condition_new_signal_1());
+  }
+}
+
+
+/** --------------------------------------------------------------------
+ ** Construction and destruction: standalone struct instances, plain constructors.
+ ** ----------------------------------------------------------------- */
+
+void
+test_3_1 (cce_destination_t upper_L)
+/* Plain constructor, explicit clean handler usage. */
+{
+  cce_location_t	L[1];
+  cce_clean_handler_t	B_H[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccstr_buffer_t	*B = ccname_new(ccstr_buffer_t)(L, 64);
+    ccstr_init_and_register_buffer_handler(L, B_H, B);
+
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+    cce_run_body_handlers(L);
+  }
+}
+
+void
+test_3_2 (cce_destination_t upper_L)
+/* Plain constructor, explicit error handler usage. */
+{
+  cce_location_t	L[1];
+  cce_error_handler_t	B_H[1];
+
+  if (cce_location(L)) {
+    if (cctests_condition_is_signal_1(cce_condition(L))) {
+      cce_run_catch_handlers_final(L);
+    } else {
+      cce_run_catch_handlers_raise(L, upper_L);
+    }
+  } else {
+    ccstr_buffer_t	*B = ccname_new(ccstr_buffer_t)(L, 64);
+    ccstr_init_and_register_buffer_handler(L, B_H, B);
+
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+    cce_raise(L, cctests_condition_new_signal_1());
+  }
+}
+
+void
+test_3_3 (cce_destination_t upper_L)
+{
+  cce_location_t	L[1];
+  cce_clean_handler_t	src_H[1], dst_H[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccstr_buffer_t	*src, *dst;
+
+    src = ccname_new(ccstr_buffer_t)(L, 64);
+    ccstr_init_and_register_buffer_handler(L, src_H, src);
+    ccstr_buffer_format(L, src, "These are the buffer's contents (%s).\n", __func__);
+
+    dst = ccname_new(ccstr_buffer_t, copy)(L, src);
+    ccstr_init_and_register_buffer_handler(L, dst_H, dst);
+
+    ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+    ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+    cce_run_body_handlers(L);
+  }
+}
+
+
+/** --------------------------------------------------------------------
+ ** Construction and destruction: standalone struct instances, guarded constructors.
+ ** ----------------------------------------------------------------- */
+
+void
+test_4_1 (cce_destination_t upper_L)
+/* Finalisation with clean handler. */
+{
+  cce_location_t	L[1];
+  cce_clean_handler_t	B_H[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccstr_buffer_t	*B = ccname_new(ccstr_buffer_t, clean)(L, B_H, 64);
+
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+    cce_run_body_handlers(L);
+  }
+}
+
+void
+test_4_2 (cce_destination_t upper_L)
+/* Finalisation with error handler. */
+{
+  cce_location_t	L[1];
+  cce_error_handler_t	B_H[1];
+
+  if (cce_location(L)) {
+    if (cctests_condition_is_signal_1(cce_condition(L))) {
+      cce_run_catch_handlers_final(L);
+    } else {
+      cce_run_catch_handlers_raise(L, upper_L);
+    }
+  } else {
+    ccstr_buffer_t	*B = ccname_new(ccstr_buffer_t, error)(L, B_H, 64);
+
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+    cce_raise(L, cctests_condition_new_signal_1());
+  }
+}
+
+/* ------------------------------------------------------------------ */
+
+void
+test_4_3 (cce_destination_t upper_L)
+/* Initialisation, copy initialisation, finalisation with clean handlers. */
+{
+  cce_location_t	L[1];
+  cce_clean_handler_t	src_H[1], dst_H[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccstr_buffer_t	*src, *dst;
+
+    src = ccname_new(ccstr_buffer_t, clean)(L, src_H, 64);
+    ccstr_buffer_format(L, src, "These are the buffer's contents (%s).\n", __func__);
+    dst = ccname_new(ccstr_buffer_t, copy, clean)(L, dst_H, src);
+
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+    cce_run_body_handlers(L);
+  }
+}
+
+void
+test_4_4 (cce_destination_t upper_L)
+/* Initialisation, copy initialisation, finalisation with error handlers. */
+{
+  cce_location_t	L[1];
+  cce_error_handler_t	src_H[1], dst_H[1];
+
+  if (cce_location(L)) {
+    if (cctests_condition_is_signal_1(cce_condition(L))) {
+      cce_run_catch_handlers_final(L);
+    } else {
+      cce_run_catch_handlers_raise(L, upper_L);
+    }
+  } else {
+    ccstr_buffer_t	*src, *dst;
+
+    src = ccname_new(ccstr_buffer_t, error)(L, src_H, 64);
+    ccstr_buffer_format(L, src, "These are the buffer's contents (%s).\n", __func__);
+    dst = ccname_new(ccstr_buffer_t, copy, error)(L, dst_H, src);
+
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+
+    cce_raise(L, cctests_condition_new_signal_1());
   }
 }
 
@@ -77,7 +515,7 @@ test_1_2 (cce_destination_t upper_L)
  ** ----------------------------------------------------------------- */
 
 void
-test_2_1 (cce_destination_t upper_L)
+test_5_1 (cce_destination_t upper_L)
 /* Test writing a string to the buffer. */
 {
   cce_location_t	L[1];
@@ -87,8 +525,7 @@ test_2_1 (cce_destination_t upper_L)
   if (cce_location(L)) {
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
-    ccstr_buffer_init(L, B, 123);
-    ccstr_clean_handler_buffer_init(L, B_H, B);
+    ccname_init(ccstr_buffer_t, clean)(L, B_H, B, 64);
     ccstr_buffer_format(L, B, "ciao\n");
     if (0) {
       ccmem_ascii_t	block = ccstr_buffer_output_ascii(B);
@@ -100,7 +537,7 @@ test_2_1 (cce_destination_t upper_L)
 }
 
 void
-test_2_2 (cce_destination_t upper_L)
+test_5_2 (cce_destination_t upper_L)
 /* Test writing  a string to the  buffer in a way  that causes a reallocation  of the
    buffer. */
 {
@@ -111,8 +548,7 @@ test_2_2 (cce_destination_t upper_L)
   if (cce_location(L)) {
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
-    ccstr_buffer_init(L, B, 1);
-    ccstr_clean_handler_buffer_init(L, B_H, B);
+    ccname_init(ccstr_buffer_t, clean)(L, B_H, B, 1);
     ccstr_buffer_format(L, B, "ciao %d %d %d\n", 1, 2, 3);
     if (0) {
       ccmem_ascii_t	block = ccstr_buffer_output_ascii(B);
@@ -124,7 +560,7 @@ test_2_2 (cce_destination_t upper_L)
 }
 
 void
-test_2_3 (cce_destination_t upper_L)
+test_5_3 (cce_destination_t upper_L)
 /* Test writing multiple strings to the buffer. */
 {
   cce_location_t	L[1];
@@ -134,8 +570,7 @@ test_2_3 (cce_destination_t upper_L)
   if (cce_location(L)) {
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
-    ccstr_buffer_init(L, B, 123);
-    ccstr_clean_handler_buffer_init(L, B_H, B);
+    ccname_init(ccstr_buffer_t, clean)(L, B_H, B, 64);
     ccstr_buffer_format(L, B, "ciao");
     ccstr_buffer_format(L, B, " mamma\n");
     if (0) {
@@ -148,7 +583,7 @@ test_2_3 (cce_destination_t upper_L)
 }
 
 void
-test_2_4 (cce_destination_t upper_L)
+test_5_4 (cce_destination_t upper_L)
 /* Test writing multiple strings to the buffer in a way that causes a reallocation of
    the buffer. */
 {
@@ -159,8 +594,7 @@ test_2_4 (cce_destination_t upper_L)
   if (cce_location(L)) {
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
-    ccstr_buffer_init(L, B, 1);
-    ccstr_clean_handler_buffer_init(L, B_H, B);
+    ccname_init(ccstr_buffer_t, clean)(L, B_H, B, 1);
     ccstr_buffer_format(L, B, "ciao ");
     ccstr_buffer_format(L, B, "mamma\n");
     if (0) {
@@ -173,7 +607,7 @@ test_2_4 (cce_destination_t upper_L)
 }
 
 void
-test_2_5 (cce_destination_t upper_L)
+test_5_5 (cce_destination_t upper_L)
 /* Test writing a buffer to a "FILE". */
 {
   cce_location_t	L[1];
@@ -183,8 +617,7 @@ test_2_5 (cce_destination_t upper_L)
   if (cce_location(L)) {
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
-    ccstr_buffer_init(L, B, 1);
-    ccstr_clean_handler_buffer_init(L, B_H, B);
+    ccname_init(ccstr_buffer_t, clean)(L, B_H, B, 1);
     ccstr_buffer_format(L, B, "ciao ");
     ccstr_buffer_format(L, B, "mamma\n");
     if (0) {
@@ -209,20 +642,50 @@ main (void)
 
   cctests_init("tests for buffers");
   {
-    cctests_begin_group("constructors and destructors");
+    cctests_begin_group("initialisation and finalisation of embedded struct instances, plain constructors");
     {
       cctests_run(test_1_1);
       cctests_run(test_1_2);
+      cctests_run(test_1_3);
+      cctests_run(test_1_4);
+      cctests_run(test_1_5);
+      cctests_run(test_1_6);
     }
     cctests_end_group();
 
-    cctests_begin_group("buffer formatting");
+    cctests_begin_group("initialisation and finalisation of embedded struct instances, guarded constructors");
     {
       cctests_run(test_2_1);
       cctests_run(test_2_2);
       cctests_run(test_2_3);
       cctests_run(test_2_4);
-      cctests_run(test_2_5);
+    }
+    cctests_end_group();
+
+    cctests_begin_group("construction and destruction of standalone struct instances, plain constructors");
+    {
+      cctests_run(test_3_1);
+      cctests_run(test_3_2);
+      cctests_run(test_3_3);
+    }
+    cctests_end_group();
+
+    cctests_begin_group("construction and destruction of standalone struct instances, guarded constructors");
+    {
+      cctests_run(test_4_1);
+      cctests_run(test_4_2);
+      cctests_run(test_4_3);
+      cctests_run(test_4_4);
+    }
+    cctests_end_group();
+
+    cctests_begin_group("buffer formatting");
+    {
+      cctests_run(test_5_1);
+      cctests_run(test_5_2);
+      cctests_run(test_5_3);
+      cctests_run(test_5_4);
+      cctests_run(test_5_5);
     }
     cctests_end_group();
   }

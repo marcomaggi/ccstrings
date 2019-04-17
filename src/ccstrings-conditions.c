@@ -73,7 +73,7 @@ ccstr_condition_static_message_buffer_size_overflow (cce_condition_t const * C C
 
 void
 ccstr_condition_init_buffer_size_overflow (cce_destination_t L CCSTR_UNUSED, ccstr_condition_buffer_size_overflow_t * C,
-					   ccstr_buffer_t * B, size_t required_len)
+					   ccstr_buffer_t const * B, size_t required_len)
 /* This initialisation function must be called both by:
  *
  * - The constructor function of this object type.
@@ -90,7 +90,7 @@ ccstr_condition_init_buffer_size_overflow (cce_destination_t L CCSTR_UNUSED, ccs
 }
 
 cce_condition_t const *
-ccstr_condition_new_buffer_size_overflow (cce_destination_t upper_L, ccstr_buffer_t * B, size_t required_len)
+ccstr_condition_new_buffer_size_overflow (cce_destination_t upper_L, ccstr_buffer_t const * B, size_t required_len)
 /* This constructor function is the public  interface to the constructor of condition
  * objects of type "ccstr_condition_buffer_size_overflow_t".
  *
@@ -168,7 +168,7 @@ ccstr_condition_static_message_buffer_output_incomplete (cce_condition_t const *
 
 void
 ccstr_condition_init_buffer_output_incomplete (cce_destination_t L CCSTR_UNUSED, ccstr_condition_buffer_output_incomplete_t * C,
-					   ccstr_buffer_t * B, size_t written_len)
+					   ccstr_buffer_t const * B, size_t written_len)
 /* This initialisation function must be called both by:
  *
  * - The constructor function of this object type.
@@ -185,7 +185,7 @@ ccstr_condition_init_buffer_output_incomplete (cce_destination_t L CCSTR_UNUSED,
 }
 
 cce_condition_t const *
-ccstr_condition_new_buffer_output_incomplete (cce_destination_t upper_L, ccstr_buffer_t * B, size_t written_len)
+ccstr_condition_new_buffer_output_incomplete (cce_destination_t upper_L, ccstr_buffer_t const * B, size_t written_len)
 /* This constructor function is the public  interface to the constructor of condition
  * objects of type "ccstr_condition_buffer_output_incomplete_t".
  *

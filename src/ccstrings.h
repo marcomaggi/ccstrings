@@ -88,6 +88,7 @@ extern "C" {
 #include <ccexceptions.h>
 #include <ccmemory.h>
 #include <ccstructs.h>
+#include <ccnames.h>
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -148,41 +149,89 @@ struct ccstr_buffer_t {
   /* Number of bytes allocated for the output buffer. */
   size_t	buflen;
 
-  /* Offset of  the next free byte  in the output buffer.   This is also
-     the number of bytes used in the buffer. */
+  /* Offset of the next  free byte in the output buffer.  This is  also the number of
+     bytes used in the buffer. */
   size_t	bufoff;
 };
 
-ccstr_decl void ccstr_buffer_init (cce_location_t * L, ccstr_buffer_t * B, size_t initial_buflen)
-  __attribute__((nonnull(1,2)));
+/* ------------------------------------------------------------------ */
 
-ccstr_decl void ccstr_buffer_final (ccstr_buffer_t * B)
-  __attribute__((nonnull(1)));
+ccstr_decl void ccname_init(ccstr_buffer_t) (cce_destination_t L, ccstr_buffer_t * B, size_t initial_buflen)
+  __attribute__((__nonnull__(1,2)));
 
-ccstr_decl void ccstr_clean_handler_buffer_init (cce_location_t * L, cce_clean_handler_t * H, ccstr_buffer_t * B)
-  __attribute__((nonnull(1,2,3)));
+ccstr_decl void ccname_init(ccstr_buffer_t, copy) (cce_destination_t L, ccstr_buffer_t * dst, ccstr_buffer_t const * src)
+  __attribute__((__nonnull__(1,2,3)));
 
-ccstr_decl void ccstr_error_handler_buffer_init (cce_location_t * L, cce_error_handler_t * H, ccstr_buffer_t * B)
-  __attribute__((nonnull(1,2,3)));
+ccstr_decl void ccname_final(ccstr_buffer_t) (ccstr_buffer_t * B)
+  __attribute__((__nonnull__(1)));
 
 /* ------------------------------------------------------------------ */
 
-ccstr_decl void ccstr_buffer_format (cce_location_t * L, ccstr_buffer_t * B, const char * template, ...)
-  __attribute__((nonnull(1,2,3)));
+ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t) (cce_destination_t L, size_t initial_buflen)
+  __attribute__((__nonnull__(1),__returns_nonnull__));
 
-ccstr_decl void ccstr_buffer_vformat (cce_location_t * L, ccstr_buffer_t * B, const char * template, va_list ap)
-  __attribute__((nonnull(1,2,3)));
+ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, copy) (cce_destination_t L, ccstr_buffer_t const * src)
+  __attribute__((__nonnull__(1,2),__returns_nonnull__));
 
-ccstr_decl void ccstr_buffer_fwrite (cce_location_t * L, ccstr_buffer_t * B, FILE * stream)
-  __attribute__((nonnull(1,2,3)));
+ccstr_decl void ccname_delete(ccstr_buffer_t) (ccstr_buffer_t * B)
+  __attribute__((__nonnull__(1)));
 
-ccstr_decl void ccstr_buffer_write (cce_location_t * L, ccstr_buffer_t * B, int filedes)
-  __attribute__((nonnull(1,2)));
+/* ------------------------------------------------------------------ */
 
-ccstr_decl void ccstr_buffer_enlarge (cce_location_t * L, ccstr_buffer_t * B, size_t required_len)
-  __attribute__((nonnull(1,2)));
+ccstr_decl void ccname_init(ccstr_buffer_t, clean) (cce_destination_t L, cce_clean_handler_t * H,
+							     ccstr_buffer_t * B, size_t initial_buflen)
+  __attribute__((__nonnull__(1,2,3)));
 
-__attribute__((pure,nonnull(1),always_inline))
+ccstr_decl void ccname_init(ccstr_buffer_t, error) (cce_destination_t L, cce_error_handler_t * H,
+							     ccstr_buffer_t * B, size_t initial_buflen)
+  __attribute__((__nonnull__(1,2,3)));
+
+/* ------------------------------------------------------------------ */
+
+ccstr_decl void ccname_init(ccstr_buffer_t, copy, clean) (cce_destination_t L, cce_clean_handler_t * H,
+								   ccstr_buffer_t * dst, ccstr_buffer_t const * src)
+  __attribute__((__nonnull__(1,2,3,4)));
+
+ccstr_decl void ccname_init(ccstr_buffer_t, copy, error) (cce_destination_t L, cce_error_handler_t * H,
+								   ccstr_buffer_t * dst, ccstr_buffer_t const * src)
+  __attribute__((__nonnull__(1,2,3,4)));
+
+/* ------------------------------------------------------------------ */
+
+ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, clean) (cce_destination_t L, cce_clean_handler_t * H, size_t initial_buflen)
+  __attribute__((__nonnull__(1,2),__returns_nonnull__));
+
+ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, error) (cce_destination_t L, cce_error_handler_t * H, size_t initial_buflen)
+  __attribute__((__nonnull__(1,2),__returns_nonnull__));
+
+/* ------------------------------------------------------------------ */
+
+ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, copy, clean) (cce_destination_t L, cce_clean_handler_t * H,
+									      ccstr_buffer_t const * src)
+  __attribute__((__nonnull__(1,2,3),__returns_nonnull__));
+
+ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, copy, error) (cce_destination_t L, cce_error_handler_t * H,
+									      ccstr_buffer_t const * src)
+  __attribute__((__nonnull__(1,2,3),__returns_nonnull__));
+
+/* ------------------------------------------------------------------ */
+
+ccstr_decl void ccstr_buffer_format (cce_destination_t L, ccstr_buffer_t * B, const char * template, ...)
+  __attribute__((__nonnull__(1,2,3)));
+
+ccstr_decl void ccstr_buffer_vformat (cce_destination_t L, ccstr_buffer_t * B, const char * template, va_list ap)
+  __attribute__((__nonnull__(1,2,3)));
+
+ccstr_decl void ccstr_buffer_fwrite (cce_destination_t L, ccstr_buffer_t const * B, FILE * stream)
+  __attribute__((__nonnull__(1,2,3)));
+
+ccstr_decl void ccstr_buffer_write (cce_destination_t L, ccstr_buffer_t const * B, int filedes)
+  __attribute__((__nonnull__(1,2)));
+
+ccstr_decl void ccstr_buffer_enlarge (cce_destination_t L, ccstr_buffer_t * B, size_t required_len)
+  __attribute__((__nonnull__(1,2)));
+
+__attribute__((__pure__,__nonnull__(1),__always_inline__))
 static inline bool
 ccstr_buffer_full_p (ccstr_buffer_t * B)
 /* Return true if the buffer is full. */
@@ -192,7 +241,7 @@ ccstr_buffer_full_p (ccstr_buffer_t * B)
 
 /* ------------------------------------------------------------------ */
 
-__attribute__((pure,nonnull(1),always_inline))
+__attribute__((__pure__,__nonnull__(1),__always_inline__))
 static inline ccmem_block_t
 ccstr_buffer_output_block (ccstr_buffer_t * B)
 /* Return a block representing the data in the buffer. */
@@ -204,7 +253,7 @@ ccstr_buffer_output_block (ccstr_buffer_t * B)
   return block;
 }
 
-__attribute__((pure,nonnull(1),always_inline))
+__attribute__((__pure__,__nonnull__(1),__always_inline__))
 static inline ccmem_ascii_t
 ccstr_buffer_output_ascii (ccstr_buffer_t * B)
 /* Return a block representing the data in the buffer. */
@@ -218,7 +267,7 @@ ccstr_buffer_output_ascii (ccstr_buffer_t * B)
 
 /* ------------------------------------------------------------------ */
 
-__attribute__((pure,nonnull(1),always_inline))
+__attribute__((__pure__,__nonnull__(1),__always_inline__))
 static inline ccmem_block_t
 ccstr_buffer_target_block (ccstr_buffer_t * B)
 /* Return a block representing the free  room in the buffer.  The return
@@ -232,7 +281,7 @@ ccstr_buffer_target_block (ccstr_buffer_t * B)
   return block;
 }
 
-__attribute__((pure,nonnull(1),always_inline))
+__attribute__((__pure__,__nonnull__(1),__always_inline__))
 static inline ccmem_ascii_t
 ccstr_buffer_target_ascii (ccstr_buffer_t * B)
 /* Return a block representing the free  room in the buffer.  The return
@@ -248,12 +297,40 @@ ccstr_buffer_target_ascii (ccstr_buffer_t * B)
 
 
 /** --------------------------------------------------------------------
+ ** Buffer objects: exception handlers.
+ ** ----------------------------------------------------------------- */
+
+ccstr_decl void ccstr_init_and_register_buffer_clean_handler (cce_destination_t L,
+							      cce_clean_handler_t * H, ccstr_buffer_t const * B)
+  __attribute__((__nonnull__(1,2,3)));
+
+ccstr_decl void ccstr_init_and_register_buffer_error_handler (cce_destination_t L,
+							      cce_error_handler_t * H, ccstr_buffer_t const * B)
+  __attribute__((__nonnull__(1,2,3)));
+
+#define ccstr_init_and_register_buffer_handler(L,H,B)			\
+  _Generic((H),								\
+	   cce_clean_handler_t *: ccstr_init_and_register_buffer_clean_handler, \
+	   cce_error_handler_t *: ccstr_init_and_register_buffer_error_handler)(L,H,B)
+
+
+/** --------------------------------------------------------------------
+ ** Buffer objects: implemented interfaces.
+ ** ----------------------------------------------------------------- */
+
+/* Constructor for a "ccstructs_dumpable_T" trait that prints a struct representation
+   on some output channel. */
+ccstructs_decl ccstructs_dumpable_T ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t) (ccstr_buffer_t const * B)
+  __attribute__((__nonnull__(1)));
+
+
+/** --------------------------------------------------------------------
  ** Strings.
  ** ----------------------------------------------------------------- */
 
 typedef void ccstr_final_t (ccstr_t * S);
-typedef ccstr_t * ccstr_alloc_t (cce_location_t * L, size_t num_of_wchars);
-typedef ccstr_t * ccstr_realloc_t (cce_location_t * L, ccstr_t * S, size_t new_num_of_wchars);
+typedef ccstr_t * ccstr_alloc_t (cce_destination_t L, size_t num_of_wchars);
+typedef ccstr_t * ccstr_realloc_t (cce_destination_t L, ccstr_t * S, size_t new_num_of_wchars);
 typedef void ccstr_free_t (ccstr_t * S);
 
 struct ccstr_vtable_t {
@@ -272,110 +349,42 @@ struct ccstr_t {
 
 ccstr_decl ccstr_vtable_t const * const ccstr_malloc_vtable;
 
-ccstr_decl ccstr_t * ccstr_new (cce_location_t * L, ccstr_vtable_t const * vtable, size_t num_of_wchars)
-  __attribute__((nonnull(1),returns_nonnull));
+ccstr_decl ccstr_t * ccstr_new (cce_destination_t L, ccstr_vtable_t const * vtable, size_t num_of_wchars)
+  __attribute__((__nonnull__(1),__returns_nonnull__));
 
 ccstr_decl void ccstr_delete (ccstr_t * S)
-  __attribute__((nonnull(1)));
+  __attribute__((__nonnull__(1)));
 
-ccstr_decl void ccstr_cleanup_handler_init (cce_location_t * L, cce_handler_t * H, ccstr_t * S)
-  __attribute__((nonnull(1,2,3)));
+ccstr_decl void ccstr_cleanup_handler_init (cce_destination_t L, cce_handler_t * H, ccstr_t * S)
+  __attribute__((__nonnull__(1,2,3)));
 
-ccstr_decl void ccstr_error_handler_init (cce_location_t * L, cce_handler_t * H, ccstr_t * S)
-  __attribute__((nonnull(1,2,3)));
-
-/* ------------------------------------------------------------------ */
-
-ccstr_decl ccstr_t * ccstr_new_from_static (cce_location_t * L, ccstr_vtable_t const * vtable, wchar_t const * str, size_t num_of_wchars)
-  __attribute__((nonnull(1,2,3),returns_nonnull));
-
-ccstr_decl ccstr_t * ccstr_new_from_staticz (cce_location_t * L, ccstr_vtable_t const * vtable, wchar_t const * str)
-  __attribute__((nonnull(1,2,3),returns_nonnull));
+ccstr_decl void ccstr_error_handler_init (cce_destination_t L, cce_handler_t * H, ccstr_t * S)
+  __attribute__((__nonnull__(1,2,3)));
 
 /* ------------------------------------------------------------------ */
 
-ccstr_decl void ccstr_format (cce_location_t * L, ccstr_t * S, const char * template, ...)
-  __attribute__((nonnull(1,2,3)));
+ccstr_decl ccstr_t * ccstr_new_from_static (cce_destination_t L, ccstr_vtable_t const * vtable, wchar_t const * str, size_t num_of_wchars)
+  __attribute__((__nonnull__(1,2,3),__returns_nonnull__));
 
-ccstr_decl void ccstr_vformat (cce_location_t * L, ccstr_t * S, const char * template, va_list ap)
-  __attribute__((nonnull(1,2,3)));
-
-ccstr_decl void ccstr_fwrite (cce_location_t * L, ccstr_t * S, FILE * stream)
-  __attribute__((nonnull(1,2,3)));
-
-ccstr_decl void ccstr_write (cce_location_t * L, ccstr_t * S, int filedes)
-  __attribute__((nonnull(1,2)));
-
-ccstr_decl void ccstr_enlarge (cce_location_t * L, ccstr_t * S, size_t required_len)
-  __attribute__((nonnull(1,2)));
-
-#if 0
-
-__attribute__((pure,nonnull(1),always_inline))
-static inline bool
-ccstr_full_p (ccstr_t * S)
-/* Return true if the buffer is full. */
-{
-  return (S->bufoff < S->buflen)? false : true;
-}
+ccstr_decl ccstr_t * ccstr_new_from_staticz (cce_destination_t L, ccstr_vtable_t const * vtable, wchar_t const * str)
+  __attribute__((__nonnull__(1,2,3),__returns_nonnull__));
 
 /* ------------------------------------------------------------------ */
 
-__attribute__((pure,nonnull(1),always_inline))
-static inline ccmem_block_t
-ccstr_output_block (ccstr_t * S)
-/* Return a block representing the data in the buffer. */
-{
-  ccmem_block_t	block = {
-    .ptr = S->bufptr,
-    .len = S->bufoff
-  };
-  return block;
-}
+ccstr_decl void ccstr_format (cce_destination_t L, ccstr_t * S, const char * template, ...)
+  __attribute__((__nonnull__(1,2,3)));
 
-__attribute__((pure,nonnull(1),always_inline))
-static inline ccmem_ascii_t
-ccstr_output_ascii (ccstr_t * S)
-/* Return a block representing the data in the buffer. */
-{
-  ccmem_ascii_t	block = {
-    .ptr = (char *)S->bufptr,
-    .len = S->bufoff
-  };
-  return block;
-}
+ccstr_decl void ccstr_vformat (cce_destination_t L, ccstr_t * S, const char * template, va_list ap)
+  __attribute__((__nonnull__(1,2,3)));
 
-/* ------------------------------------------------------------------ */
+ccstr_decl void ccstr_fwrite (cce_destination_t L, ccstr_t * S, FILE * stream)
+  __attribute__((__nonnull__(1,2,3)));
 
-__attribute__((pure,nonnull(1),always_inline))
-static inline ccmem_block_t
-ccstr_target_block (ccstr_t * S)
-/* Return a block representing the free  room in the buffer.  The return
-   value   of  this   function  is   meaningful  only   if  a   call  to
-   "ccstr_full_p()" applied to the same buffer returns false. */
-{
-  ccmem_block_t	block = {
-    .ptr = (S->bufptr + S->bufoff),
-    .len = (S->buflen - S->bufoff)
-  };
-  return block;
-}
+ccstr_decl void ccstr_write (cce_destination_t L, ccstr_t * S, int filedes)
+  __attribute__((__nonnull__(1,2)));
 
-__attribute__((pure,nonnull(1),always_inline))
-static inline ccmem_ascii_t
-ccstr_target_ascii (ccstr_t * S)
-/* Return a block representing the free  room in the buffer.  The return
-   value   of  this   function  is   meaningful  only   if  a   call  to
-   "ccstr_full_p()" applied to the same buffer returns false. */
-{
-  ccmem_ascii_t	ascii = {
-    .ptr = (char *)(S->bufptr + S->bufoff),
-    .len = (S->buflen - S->bufoff)
-  };
-  return ascii;
-}
-
-#endif
+ccstr_decl void ccstr_enlarge (cce_destination_t L, ccstr_t * S, size_t required_len)
+  __attribute__((__nonnull__(1,2)));
 
 
 /** --------------------------------------------------------------------
@@ -391,7 +400,7 @@ struct ccstr_descriptor_buffer_size_overflow_t {
 
 struct ccstr_condition_buffer_size_overflow_t {
   cce_condition_runtime_error_t	runtime_error;
-  ccstr_buffer_t *		buffer;
+  ccstr_buffer_t const *	buffer;
   size_t			required_len;
 };
 
@@ -402,10 +411,11 @@ ccstr_decl void cce_descriptor_set_parent_to(ccstr_descriptor_buffer_size_overfl
 
 ccstr_decl void ccstr_condition_init_buffer_size_overflow (cce_destination_t L,
 							   ccstr_condition_buffer_size_overflow_t * C,
-							   ccstr_buffer_t * B, size_t required_len)
+							   ccstr_buffer_t const * B, size_t required_len)
   __attribute__((__nonnull__(1,2)));
 
-ccstr_decl cce_condition_t const * ccstr_condition_new_buffer_size_overflow (cce_destination_t L, ccstr_buffer_t * B, size_t required_len)
+ccstr_decl cce_condition_t const * ccstr_condition_new_buffer_size_overflow (cce_destination_t L,
+									     ccstr_buffer_t const * B, size_t required_len)
   __attribute__((__nonnull__(1,2)));
 
 ccstr_decl bool ccstr_condition_is_buffer_size_overflow (cce_condition_t const * C)
@@ -425,7 +435,7 @@ struct ccstr_descriptor_buffer_output_incomplete_t {
 
 struct ccstr_condition_buffer_output_incomplete_t {
   cce_condition_runtime_error_t	runtime_error;
-  ccstr_buffer_t *		buffer;
+  ccstr_buffer_t const *	buffer;
   size_t			written_len;
 };
 
@@ -436,10 +446,11 @@ ccstr_decl void cce_descriptor_set_parent_to(ccstr_descriptor_buffer_output_inco
 
 ccstr_decl void ccstr_condition_init_buffer_output_incomplete (cce_destination_t L,
 							       ccstr_condition_buffer_output_incomplete_t * C,
-							       ccstr_buffer_t * B, size_t written_len)
+							       ccstr_buffer_t const * B, size_t written_len)
   __attribute__((__nonnull__(1,2)));
 
-ccstr_decl cce_condition_t const * ccstr_condition_new_buffer_output_incomplete (cce_destination_t L, ccstr_buffer_t * B, size_t written_len)
+ccstr_decl cce_condition_t const * ccstr_condition_new_buffer_output_incomplete (cce_destination_t L,
+										 ccstr_buffer_t const * B, size_t written_len)
   __attribute__((__nonnull__(1,2)));
 
 ccstr_decl bool ccstr_condition_is_buffer_output_incomplete (cce_condition_t const * C)

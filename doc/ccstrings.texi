@@ -333,7 +333,7 @@ Type of data structure representing an exceptional--condition object.  It has th
 fields:
 
 @table @code
-@item ccstr_buffer_t * buffer
+@item ccstr_buffer_t const * buffer
 Pointer to the buffer.  The exceptional--condition object instance @strong{does not} own this
 buffer: it responsibility of the user to delete the buffer when appropriate.
 
@@ -343,13 +343,13 @@ The number of free bytes that were requested in the buffer.
 @end deftp
 
 
-@CCEConditionObjectNew{ccstr,buffer_size_overflow,{ccstr_buffer_t * @var{B}, size_t @var{required_len}}}
+@CCEConditionObjectNew{ccstr,buffer_size_overflow,{ccstr_buffer_t const * @var{B}, size_t @var{required_len}}}
 
 
 @CCEConditionObjectPredicate{ccstr,buffer_size_overflow}
 
 
-@CCEConditionSubtypingFacilitiesFailing{ccstr,buffer_size_overflow,{ccstr_buffer_t * @var{B}, size_t @var{required_len}}}
+@CCEConditionSubtypingFacilitiesFailing{ccstr,buffer_size_overflow,{ccstr_buffer_t const * @var{B}, size_t @var{required_len}}}
 
 @c page
 @node conditions incomplete output
@@ -373,7 +373,7 @@ Type of data structure representing an exceptional--condition object.  It has th
 fields:
 
 @table @code
-@item ccstr_buffer_t * buffer
+@item ccstr_buffer_t const * buffer
 Pointer to the buffer.
 
 @item size_t written_len
@@ -382,13 +382,13 @@ The number of bytes that were written to the device.
 @end deftp
 
 
-@CCEConditionObjectNew{ccstr,buffer_incomplete_output,{ccstr_buffer_t * @var{B}, size_t @var{written_len}}}
+@CCEConditionObjectNew{ccstr,buffer_incomplete_output,{ccstr_buffer_t const * @var{B}, size_t @var{written_len}}}
 
 
 @CCEConditionObjectPredicate{ccstr,buffer_incomplete_output}
 
 
-@CCEConditionSubtypingFacilitiesFailing{ccstr,buffer_incomplete_output,{ccstr_buffer_t * @var{B}, size_t @var{written_len}}}
+@CCEConditionSubtypingFacilitiesFailing{ccstr,buffer_incomplete_output,{ccstr_buffer_t const * @var{B}, size_t @var{written_len}}}
 
 @c page
 @node buffers
@@ -397,58 +397,8 @@ The number of bytes that were written to the device.
 
 Programmatically generated textual output is gathered in @dfn{buffers}: dynamically allocated blocks
 of memory that can be resized and to which we write with functions similar to the standard
-@cfunc{vsnprintf}.
-
-@menu
-* buffers typedefs::            Buffer type definitions.
-* buffers format::              Formatting buffer contents.
-* buffers output::              Writing output to buffers.
-* buffers inspection::          Inspecting buffers.
-* buffers memory::              Buffers memory handlers.
-@end menu
-
-@c page
-@node buffers typedefs
-@section Buffer type definitions
-
-
-A buffer can be initialised and finalised as follows:
-
-@example
-cce_location_t        L[1];
-ccstr_buffer_t        B[1];
-
-if (cce_location(L)) @{
-  cce_run_catch_handlers_final(L);
-@} else @{
-  ccstr_buffer_init(L, B, 123);
-  @{
-    /* Do something with "B" here. */
-  @}
-  ccstr_buffer_final(B);
-  cce_run_body_handlers(L);
-@}
-@end example
-
-@noindent
-but it is more handy to use the predefined CCExceptions handler:
-
-@example
-cce_location_t          L[1];
-ccstr_buffer_t          B[1];
-cce_clean_handler_t     B_H[1];
-
-if (cce_location(L)) @{
-  cce_run_catch_handlers_final(L);
-@} else @{
-  ccstr_buffer_init(L, B, 123);
-  ccstr_clean_handler_buffer_init(L, B_H, B);
-  @{
-    /* Do something with "B" here. */
-  @}
-  cce_run_body_handlers(L);
-@}
-@end example
+@cfunc{vsnprintf}.  The definitions of the buffers @api{} are accessible in the header file
+@file{ccstrings.h}.
 
 
 @deftp {Struct Typedef} ccstr_buffer_t
@@ -457,29 +407,560 @@ a block of memory holding the actual data; such memory is allocated with @cfunc{
 @end deftp
 
 
-@deftypefun void ccstr_buffer_init (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{initial_buflen})
-Initialise an already allocated buffer structure.  Allocate memory for the buffer at the initial
+@menu
+* buffers ctors::               Constructors and destructors.
+* buffers format::              Formatting buffer contents.
+* buffers output::              Writing output to buffers.
+* buffers inspection::          Inspecting buffers.
+* buffers memory::              Buffers memory handlers.
+@end menu
+
+@c page
+@node buffers ctors
+@section Constructors and destructors
+
+
+@menu
+* buffers ctors embedded::      Constructors and destructors for
+                                embedded instances.
+* buffers ctors standalone::    Constructors and destructors for
+                                standalone instances.
+* buffers ctors handlers::      Exception handlers.
+@end menu
+
+@c page
+@node buffers ctors embedded
+@subsection Constructors and destructors for embedded instances
+
+
+@menu
+* buffers ctors embedded plain::    Plain initialisation and finalisation.
+* buffers ctors embedded guarded::  Guarded initialisation.
+@end menu
+
+@c page
+@node buffers ctors embedded plain
+@subsubsection Plain initialisation and finalisation
+
+
+An @dfn{embedded instance} is a @struct{} instance allocated on the stack or embedded into another,
+enclosing, @struct{} instance.  This section documents the @emph{plain} initialisation and
+finalisation functions, which are the ones to use when embedding a buffer instance into an enclosing
+@struct{} type; example:
+
+@smallexample
+typedef struct envelope_t       envelope_t;
+
+struct envelope_t @{
+  ccstr_buffer_t        B[1];
+@};
+
+void
+ccname_init(envelope_t) (cce_destination_t upper_L, envelope_t * E)
+@{
+  cce_location_t        L[1];
+  cce_error_handler_t   B_H[1];
+
+  if (cce_location(L)) @{
+    cce_run_catch_handlers_raise(L, upper_L);
+  @} else @{
+    ccname_init(ccstr_buffer_t)(L, E->B, 64);
+    ccstr_init_and_register_buffer_handler(L, B_H, E->B);
+
+    /* Initialise the other fields of E, if any. */
+    cce_run_body_handlers(L);
+  @}
+@}
+
+void
+ccname_final(envelope_t) (envelope_t * E)
+@{
+  ccname_final(ccstr_buffer_t)(E->B);
+@}
+
+void
+ccname_init(envelope_t, clean) (cce_destination_t L,
+   cce_clean_handler_t * E_H, envelope_t * E)
+@{
+  ccname_init(envelope_t)(L, E);
+  cce_init_and_register_handler
+    (L, E_H, cce_default_clean_handler_function,
+     cce_resource_pointer(E),
+     cce_resource_destructor(ccname_final(envelope_t)));
+@}
+
+void
+ccname_init(envelope_t, error) (cce_destination_t L,
+   cce_error_handler_t * E_H, envelope_t * E)
+@{
+  ccname_init(envelope_t)(L, E);
+  cce_init_and_register_handler
+    (L, E_H, cce_default_error_handler_function,
+     cce_resource_pointer(E),
+     cce_resource_destructor(ccname_final(envelope_t)));
+@}
+@end smallexample
+
+The following definitions are accessible in the header file @file{ccstrings.h}.
+
+
+@deftypefun void {ccname_init(ccstr_buffer_t)} (cce_destination_t @var{L}, ccstr_buffer_t * @var{B}, size_t @var{initial_buflen})
+Initialise an already allocated buffer instance referenced by @var{B}.  Allocate memory for the
+buffer with the initial size of @var{initial_buflen}.  If an error occurs allocating: perform a
+non--local exit by jumping to @var{L}.
+
+We can initialise an embedded instance, associating it to a clean handler, as follows; notice how
+the buffer instance allocated on the stack must be outside the @code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+cce_clean_handler_t   B_H[1];
+ccstr_buffer_t        B[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccname_init(ccstr_buffer_t)(L, B, 64);
+  ccstr_init_and_register_buffer_handler(L, B_H, B);
+  ccstr_buffer_format(L, B, "These are the buffer's contents.\n");
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
+
+
+@deftypefun void {ccname_init(ccstr_buffer_t, copy)} (cce_destination_t @var{L}, ccstr_buffer_t * @var{dst}, ccstr_buffer_t const * @var{src})
+Initialise an already allocated buffer instance referenced by @var{dst}.  Make a perfect copy of the
+buffer referenced by @var{src}.  If an error occurs: perform a non--local exit by jumping to
+@var{L}.
+
+We can initialise a copy embedded instance, associating it to a clean handler, as follows; notice
+how the buffer instance allocated on the stack must be outside the @code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+ccstr_buffer_t        src[1], dst[1];
+cce_clean_handler_t   src_H[1], dst_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccname_init(ccstr_buffer_t)(L, src, 64);
+  ccstr_init_and_register_buffer_handler(L, src_H, src);
+  ccstr_buffer_format(L, src, "These are the buffer's contents.\n");
+
+  ccname_init(ccstr_buffer_t, copy)(L, dst, src);
+  ccstr_init_and_register_buffer_handler(L, dst_H, dst);
+
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
+
+
+@deftypefun void {ccname_final(ccstr_buffer_t)} (ccstr_buffer_t * @var{B})
+Finalise the buffer instance referenced by @var{B}.  Release data memory allocated for the buffer.
+Reset the structure fields.  The block of memory holding the structure itself is left untouched.
+@end deftypefun
+
+@c page
+@node buffers ctors embedded guarded
+@subsubsection Guarded initialisation
+
+
+An @dfn{embedded instance} is @struct{} instance allocated on the stack or embedded into another,
+enclosing, @struct{} instance.  This section documents the @emph{guarded} initialisation functions:
+the buffer instances are associated to an exception handler that takes care of finalising them upon
+exiting a location context, @ccexceptionsref{handlers, The location handlers @api{}}.  These
+functions are the ones to use when we put the buffer instance on the stack for local use within the
+dynamic extent of a function call.
+
+The following definitions are accessible in the header file @file{ccstrings.h}.
+
+
+@deftypefun void {ccname_init(ccstr_buffer_t, clean)} (cce_destination_t @var{L}, cce_clean_handler_t * @var{H}, ccstr_buffer_t * @var{B}, size_t @var{initial_buflen})
+Initialise an already allocated buffer instance referenced by @var{B}.  Allocate memory for the
+buffer with the initial size of @var{initial_buflen}.  Associate the buffer to the handler
+referenced by @var{H} in the context of the location @var{L}.  If an error occurs allocating:
+perform a non--local exit by jumping to @var{L}.
+
+We can initialise and finalise an embedded instance using the guarded constructor with a clean
+handler as follows; notice how the buffer instance allocated on the stack must be outside the
+@code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+ccstr_buffer_t        B[1];
+cce_clean_handler_t   B_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccname_init(ccstr_buffer_t, clean)(L, B_H, B, 64);
+
+  ccstr_buffer_format(L, B, "These are the buffer's contents.\n");
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
+
+
+@deftypefun void {ccname_init(ccstr_buffer_t, error)} (cce_destination_t @var{L}, cce_error_handler_t * @var{H}, ccstr_buffer_t * @var{B}, size_t @var{initial_buflen})
+Initialise an already allocated buffer instance referenced by @var{B}.  Allocate memory for the
+buffer with the initial size of @var{initial_buflen}.  Associate the buffer to the handler
+referenced by @var{H} in the context of the location @var{L}.  If an error occurs allocating:
+perform a non--local exit by jumping to @var{L}.
+
+We can initialise and finalise an embedded instance using the guarded constructor with an error
+handler as follows; notice how the buffer instance allocated on the stack must be outside the
+@code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+ccstr_buffer_t        B[1];
+cce_error_handler_t   B_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccname_init(ccstr_buffer_t, error)(L, B_H, B, 64);
+
+  ccstr_buffer_format(L, B, "These are the buffer's contents.\n");
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+
+  /* This will not finalise the buffer! */
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
+
+
+@deftypefun void {ccname_init(ccstr_buffer_t, copy, clean)} (cce_destination_t @var{L}, cce_clean_handler_t * @var{H}, ccstr_buffer_t * @var{dst}, ccstr_buffer_t const * @var{src})
+Initialise an already allocated buffer instance referenced by @var{dst}.  Make a perfect copy of
+the buffer referenced by @var{src}.  Associate the buffer to the handler referenced by @var{H} in
+the context of the location @var{L}.  If an error occurs allocating: perform a non--local exit by
+jumping to @var{L}.
+
+We can initialise and finalise an embedded instance using the guarded copy constructor with a clean
+handler as follows; notice how the buffer instance allocated on the stack must be outside the
+@code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+ccstr_buffer_t        src[1],   dst[1];
+cce_clean_handler_t   src_H[1], dst_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccname_init(ccstr_buffer_t, clean)(L, src_H, src, 64);
+  ccstr_buffer_format(L, src, "These are the buffer's contents.\n");
+
+  ccname_init(ccstr_buffer_t, copy, clean)(L, dst_H, dst, src);
+
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
+
+
+@deftypefun void {ccname_init(ccstr_buffer_t, copy, error)} (cce_destination_t @var{L}, cce_error_handler_t * @var{H}, ccstr_buffer_t * @var{dst}, ccstr_buffer_t const * @var{src})
+Initialise an already allocated buffer instance referenced by @var{dst}.  Make a perfect copy of the
+buffer referenced by @var{src}.  Associate the buffer to the handler referenced by @var{H} in the
+context of the location @var{L}.  If an error occurs allocating: perform a non--local exit by
+jumping to @var{L}.
+
+We can initialise and finalise an embedded instance using the guarded copy constructor with a error
+handler as follows; notice how the buffer instance allocated on the stack must be outside the
+@code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+ccstr_buffer_t        src[1],   dst[1];
+cce_error_handler_t   src_H[1], dst_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccname_init(ccstr_buffer_t, error)(L, src_H, src, 64);
+  ccstr_buffer_format(L, src, "These are the buffer's contents.\n");
+
+  ccname_init(ccstr_buffer_t, copy, error)(L, dst_H, dst, src);
+
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+
+  /* This will not finalise the buffers! */
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
+
+@c page
+@node buffers ctors standalone
+@subsection Constructors and destructors for standalone instances
+
+
+@menu
+* buffers ctors standalone plain::    Plain constructors and destructors.
+* buffers ctors standalone guarded::  Guarded constructors.
+@end menu
+
+@c page
+@node buffers ctors standalone plain
+@subsubsection Plain constructors and destructors
+
+
+A @dfn{standalone instance} is @struct{} instance dynamically allocated on the heap.  This section
+documents the @emph{plain} constructor and destructor functions; it is normally better to use the
+guarded constructors, @ref{buffers ctors standalone guarded, Guarded constructors}.
+
+The following definitions are accessible in the header file @file{ccstrings.h}.
+
+
+@deftypefun {ccstr_buffer_t *} {ccname_new(ccstr_buffer_t)} (cce_destination_t @var{L}, size_t @var{initial_buflen})
+Build a new instance and return a pointer to it.  Allocate memory for the buffer with the initial
 size of @var{initial_buflen}.  If an error occurs allocating: perform a non--local exit by jumping
 to @var{L}.
+
+We can construct a standalone instance using the plain constructor, associating it to a clean
+handler, as follows; notice how the pointer to buffer instance allocated on the heap can be inside
+the @code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+cce_clean_handler_t   B_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccstr_buffer_t      *B = ccname_new(ccstr_buffer_t)(L, 64);
+  ccstr_init_and_register_buffer_handler(L, B_H, B);
+
+  ccstr_buffer_format(L, B, "These are the buffer's contents.\n");
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+  cce_run_body_handlers(L);
+@}
+@end smallexample
 @end deftypefun
 
 
-@deftypefun void ccstr_buffer_final (ccstr_buffer_t * @var{B})
-Finalise the buffer structure.  Release data memory allocated for the buffer.  Reset the structure
-fields.  The block of memory holding the structure itself is left untouched.
+@deftypefun {ccstr_buffer_t *} {ccname_new(ccstr_buffer_t, copy)} (cce_destination_t @var{L}, ccstr_buffer_t const * @var{src})
+Build a new instance and return a pointer to it.  Make a perfect copy of the buffer referenced by
+@var{src}.  If an error occurs: perform a non--local exit by jumping to @var{L}.
+
+We can construct a standalone instance using the plain copy constructor, associating it to a clean
+handler, as follows; notice how the pointer to buffer instance allocated on the heap can be inside
+the @code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+cce_clean_handler_t   src_H[1], dst_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccstr_buffer_t      *src, *dst;
+
+  src = ccname_new(ccstr_buffer_t)(L, 64);
+  ccstr_init_and_register_buffer_handler(L, src_H, src);
+  ccstr_buffer_format(L, src, "These are the buffer's contents.\n");
+
+  dst = ccname_new(ccstr_buffer_t, copy)(L, src);
+  ccstr_init_and_register_buffer_handler(L, dst_H, dst);
+
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
+
+@c page
+@node buffers ctors standalone guarded
+@subsubsection Guarded constructors
+
+
+A @dfn{standalone instance} is @struct{} instance dynamically allocated on the heap.  This section
+documents the @emph{guarded} constructor functions: the buffer instances are associated to an
+exception handler that takes care of finalising them upon exiting a location context,
+@ccexceptionsref{handlers, The location handlers @api{}}.
+
+The following definitions are accessible in the header file @file{ccstrings.h}.
+
+
+@deftypefun {ccstr_buffer_t *} {ccname_new(ccstr_buffer_t, clean)} (cce_destination_t @var{L}, cce_clean_handler_t * @var{H}, size_t @var{initial_buflen})
+Build a new instance and return a pointer to it.  Allocate memory for the buffer with the initial
+size of @var{initial_buflen}.  Associate the buffer to the handler referenced by @var{H} in the
+context of the location @var{L}.  If an error occurs allocating: perform a non--local exit by
+jumping to @var{L}.
+
+We can construct a standalone instance using the guarded constructor as follows; notice how the
+pointer to buffer instance allocated on the heap can be inside the @code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+cce_clean_handler_t   B_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccstr_buffer_t  *B = ccname_new(ccstr_buffer_t, clean)(L, B_H, 64);
+
+  ccstr_buffer_format(L, B, "These are the buffer's contents.\n");
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+  cce_run_body_handlers(L);
+@}
+@end smallexample
 @end deftypefun
 
 
-@deftypefun void ccstr_clean_handler_buffer_init (cce_location_t * @var{L}, cce_clean_handler_t * @var{H}, ccstr_buffer_t * @var{B})
-Initialise the handler @var{H} to manage finalisation of the buffer @var{B}; register @var{H} as
-clean handler in the context of the location @var{L}.
+@deftypefun {ccstr_buffer_t *} {ccname_new(ccstr_buffer_t, error)} (cce_destination_t @var{L}, cce_error_handler_t * @var{H}, size_t @var{initial_buflen})
+Build a new instance and return a pointer to it.  Allocate memory for the buffer with the initial
+size of @var{initial_buflen}.  Associate the buffer to the handler referenced by @var{H} in the
+context of the location @var{L}.  If an error occurs allocating: perform a non--local exit by
+jumping to @var{L}.
+
+We can construct a standalone instance using the guarded constructor as follows; notice how the
+pointer to buffer instance allocated on the heap can be inside the @code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+cce_error_handler_t   B_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccstr_buffer_t  *B = ccname_new(ccstr_buffer_t, error)(L, B_H, 64);
+
+  ccstr_buffer_format(L, B, "These are the buffer's contents.\n");
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+
+  /* This will not destroy the buffer! */
+  cce_run_body_handlers(L);
+@}
+@end smallexample
 @end deftypefun
 
 
-@deftypefun void ccstr_error_handler_buffer_init (cce_location_t * @var{L}, cce_error_handler_t * @var{H}, ccstr_buffer_t * @var{B})
-Initialise the handler @var{H} to manage finalisation of the buffer @var{B}; register @var{H} as
-error handler in the context of the location @var{L}.
+@deftypefun {ccstr_buffer_t *} {ccname_new(ccstr_buffer_t, copy, clean)} (cce_destination_t @var{L}, cce_clean_handler_t * @var{H}, ccstr_buffer_t const * @var{src})
+Build a new instance and return a pointer to it.  Make a perfect copy of the buffer referenced by
+@var{src}.  Associate the buffer to the handler referenced by @var{H} in the context of the location
+@var{L}.  If an error occurs allocating: perform a non--local exit by jumping to @var{L}.
+
+We can construct a standalone instance using the guarded copy constructor as follows; notice how the
+pointer to buffer instance allocated on the heap can be inside the @code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+cce_clean_handler_t   src_H[1], dst_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccstr_buffer_t      *src, *dst;
+
+  src = ccname_new(ccstr_buffer_t, clean)(L, src_H, 64);
+  ccstr_buffer_format(L, src, "These are the buffer's contents.\n");
+  dst = ccname_new(ccstr_buffer_t, copy, clean)(L, dst_H, src);
+
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+  cce_run_body_handlers(L);
+@}
+@end smallexample
 @end deftypefun
+
+
+@deftypefun {ccstr_buffer_t *} {ccname_new(ccstr_buffer_t, copy, error)} (cce_destination_t @var{L}, cce_error_handler_t * @var{H}, ccstr_buffer_t const * @var{src})
+Build a new instance and return a pointer to it.  Make a perfect copy of the buffer referenced by
+@var{src}.  Associate the buffer to the handler referenced by @var{H} in the context of the location
+@var{L}.  If an error occurs allocating: perform a non--local exit by jumping to @var{L}.
+
+We can construct a standalone instance using the guarded copy constructor as follows; notice how the
+pointer to buffer instance allocated on the heap can be inside the @code{if} location statement:
+
+@smallexample
+cce_location_t        L[1];
+cce_error_handler_t   src_H[1], dst_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccstr_buffer_t      *src, *dst;
+
+  src = ccname_new(ccstr_buffer_t, error)(L, src_H, 64);
+  ccstr_buffer_format(L, src, "These are the buffer's contents.\n");
+  dst = ccname_new(ccstr_buffer_t, copy, error)(L, dst_H, src);
+
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
+
+  /* This will not destroy the buffers! */
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
+
+@c page
+@node buffers ctors handlers
+@subsection Exception handlers
+
+
+Exception handlers allow us to trigger finalisation of buffer instances upon leaving a location
+context, @ccexceptionsref{handlers, The location handlers @api{}}.
+
+The following definitions are accessible in the header file @file{ccstrings.h}.
+
+
+@deftypefun void ccstr_init_and_register_buffer_clean_handler (cce_destination_t @var{L}, cce_clean_handler_t * @var{H}, ccstr_buffer_t const * @var{B})
+Associate the buffer referenced by @var{B} to the handler referenced by @var{H} in the context of
+the location @var{L}.
+@end deftypefun
+
+
+@deftypefun void ccstr_init_and_register_buffer_error_handler (cce_destination_t @var{L}, cce_error_handler_t * @var{H}, ccstr_buffer_t const * @var{B})
+Associate the buffer referenced by @var{B} to the handler referenced by @var{H} in the context of
+the location @var{L}.
+@end deftypefun
+
+
+@deftypefn {Preprocessor Macro} void ccstr_init_and_register_buffer_handler (cce_destination_t @var{L}, @var{H}, ccstr_buffer_t const * @var{B})
+Associate the buffer referenced by @var{B} to the handler referenced by @var{H} in the context of
+the location @var{L}.  If the type of the pointer @var{H} is:
+
+@table @code
+@item cce_clean_handler_t *
+The macro use expands into a call to @cfunc{ccstr_init_and_register_buffer_clean_handler}.
+
+@item cce_error_handler_t *
+The macro use expands into a call to @cfunc{ccstr_init_and_register_buffer_error_handler}.
+@end table
+@end deftypefn
 
 @c page
 @node buffers format
@@ -489,22 +970,24 @@ error handler in the context of the location @var{L}.
 To format an @ascii{} string into a buffer, we do:
 
 @example
-cce_location_t  L[1];
-ccstr_buffer_t  B[1];
-cce_handler_t   B_H[1];
+cce_location_t          L[1];
+ccstr_buffer_t          B[1];
+cce_clean_handler_t     B_H[1];
 
 if (cce_location(L)) @{
   cce_run_catch_handlers_final(L);
 @} else @{
-  ccstr_buffer_init(L, B, 123);
-  ccstr_clean_handler_buffer_init(L, B_H, B);
+  ccname_init(ccstr_buffer_t)(L, B_H, B, 64);
+
   ccstr_buffer_format(L, "number=%d", 123);
   cce_run_body_handlers(L);
 @}
 @end example
 
+The following definitions are accessible in the header file @file{ccstrings.h}.
 
-@deftypefun void ccstr_buffer_format (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, char const * @var{template}, @dots{})
+
+@deftypefun void ccstr_buffer_format (cce_destination_t @var{L}, ccstr_buffer_t * @var{B}, char const * @var{template}, @dots{})
 Format a string and append it to the buffer.  If there is not enough free room in the buffer:
 reallocate it enlarging the size.  If an error occurs reallocating: perform a non--local exit by
 jumping to @var{L}; in this case @var{B} is left untouched and its contents are still valid.
@@ -514,13 +997,13 @@ format is the same of the standard @cfunc{printf}.
 @end deftypefun
 
 
-@deftypefun void ccstr_buffer_vformat (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, char const * @var{template}, va_list @var{ap})
+@deftypefun void ccstr_buffer_vformat (cce_destination_t @var{L}, ccstr_buffer_t * @var{B}, char const * @var{template}, va_list @var{ap})
 Like @cfunc{ccstr_buffer_format}, but reads arguments from @var{ap}.  Internally @var{ap} is
 duplicated, so externally it is left untouched.  We can use this function as follows:
 
 @example
 void
-print (cce_location_t * L, ccstr_buffer_t * B,
+print (cce_destination_t L, ccstr_buffer_t * B,
        char const * template, ...)
 @{
   va_list       ap;
@@ -539,13 +1022,13 @@ print (cce_location_t * L, ccstr_buffer_t * B,
 @section Writing output to buffers
 
 
-@deftypefun void ccstr_buffer_fwrite (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, FILE * @var{stream})
+@deftypefun void ccstr_buffer_fwrite (cce_destination_t @var{L}, ccstr_buffer_t * @var{B}, FILE * @var{stream})
 Write the buffer contents to @var{stream}, using the system call @cfunc{fwrite}.  If an error
 occurs: raise an exception by performing a non--local exit to @var{L}.
 @end deftypefun
 
 
-@deftypefun void ccstr_buffer_write (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, int @var{filedes})
+@deftypefun void ccstr_buffer_write (cce_destination_t @var{L}, ccstr_buffer_t * @var{B}, int @var{filedes})
 Write the buffer contents to @var{filedes}, using the system call @cfunc{write}.
 
 @itemize
@@ -595,7 +1078,7 @@ is meaningful only if a call to @cfunc{ccstr_buffer_full_p} applied to the same 
 @section Buffers memory handlers
 
 
-@deftypefun void ccstr_buffer_enlarge (cce_location_t * @var{L}, ccstr_buffer_t * @var{B}, size_t @var{required_len})
+@deftypefun void ccstr_buffer_enlarge (cce_destination_t @var{L}, ccstr_buffer_t * @var{B}, size_t @var{required_len})
 Reallocate the buffer enlarging it so that it can hold more than @var{required_len} characters.  If
 an error occurs reallocating: perform a non--local exit by jumping to @var{L}; in this case the
 buffer is left untouched and its contents are still valid.
