@@ -37,7 +37,7 @@ ccstrings_REVISION		= @ccstrings_VERSION_INTERFACE_REVISION@
 ccstrings_AGE			= @ccstrings_VERSION_INTERFACE_AGE@
 ccstrings_LINKER_VERSION	= -version-info $(ccstrings_CURRENT):$(ccstrings_REVISION):$(ccstrings_AGE)
 
-include_HEADERS			= src/ccstrings.h
+include_HEADERS			= src/ccstrings.h src/ccstrings-buffers.h
 
 lib_LTLIBRARIES			= libccstrings.la
 libccstrings_la_CPPFLAGS	= $(AM_CPPFLAGS)
@@ -45,6 +45,7 @@ libccstrings_la_CFLAGS		= $(AM_CFLAGS) $(CCEXCEPTIONS_CFLAGS) $(CCMEMORY_CFLAGS)
 libccstrings_la_LDFLAGS		= $(ccstrings_LINKER_VERSION) $(AM_LDFLAGS) $(CCEXCEPTIONS_LIBS) $(CCMEMORY_LIBS) $(CCSTRUCTS_LIBS)
 libccstrings_la_SOURCES= \
 	src/ccstrings.h			\
+	src/ccstrings-buffers.h		\
 	src/ccstrings-internals.h	\
 	src/ccstrings-version.c		\
 	src/ccstrings-conditions.c	\
