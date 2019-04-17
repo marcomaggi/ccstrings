@@ -49,7 +49,7 @@ libccstrings_la_SOURCES= \
 	src/ccstrings-internals.h	\
 	src/ccstrings-version.c		\
 	src/ccstrings-conditions.c	\
-	src/ccstrings-buffer.c		\
+	src/ccstrings-buffers.c		\
 	src/ccstrings-strings.c
 
 
