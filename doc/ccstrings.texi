@@ -414,6 +414,7 @@ a block of memory holding the actual data; such memory is allocated with @cfunc{
 * buffers output::              Writing output to buffers.
 * buffers inspection::          Inspecting buffers.
 * buffers memory::              Buffers memory handlers.
+* buffers traits::              Implemented traits.
 @end menu
 
 @c page
@@ -1084,6 +1085,14 @@ Reallocate the buffer enlarging it so that it can hold more than @var{required_l
 an error occurs reallocating: perform a non--local exit by jumping to @var{L}; in this case the
 buffer is left untouched and its contents are still valid.
 @end deftypefun
+
+@c page
+@node buffers traits
+@section Implemented traits
+
+
+@value{PACKAGE} implements some traits for the @struct{} type @objtype{ccstr_buffer_t}; the core
+traits are defined by the package CCStructs, @ccstructsref{Top, CCStructs}.
 
 @c page
 @c ------------------------------------------------------------
