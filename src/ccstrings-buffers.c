@@ -140,17 +140,33 @@ ccname_delete(ccstr_buffer_t) (ccstr_buffer_t * B)
  ** ----------------------------------------------------------------- */
 
 void
-ccstr_init_and_register_buffer_clean_handler (cce_destination_t L, cce_clean_handler_t * const H, ccstr_buffer_t const * const B)
+ccstr_init_and_register_final_buffer_clean_handler (cce_destination_t L, cce_clean_handler_t * const H, ccstr_buffer_t const * const B)
 {
   cce_init_and_register_handler(L, H, cce_default_clean_handler_function,
 				cce_resource_pointer(B), cce_resource_destructor(ccname_final(ccstr_buffer_t)));
 }
 
 void
-ccstr_init_and_register_buffer_error_handler (cce_destination_t L, cce_error_handler_t * const H, ccstr_buffer_t const * const B)
+ccstr_init_and_register_final_buffer_error_handler (cce_destination_t L, cce_error_handler_t * const H, ccstr_buffer_t const * const B)
 {
   cce_init_and_register_handler(L, H, cce_default_error_handler_function,
 				cce_resource_pointer(B), cce_resource_destructor(ccname_final(ccstr_buffer_t)));
+}
+
+/* ------------------------------------------------------------------ */
+
+void
+ccstr_init_and_register_delete_buffer_clean_handler (cce_destination_t L, cce_clean_handler_t * const H, ccstr_buffer_t const * const B)
+{
+  cce_init_and_register_handler(L, H, cce_default_clean_handler_function,
+				cce_resource_pointer(B), cce_resource_destructor(ccname_delete(ccstr_buffer_t)));
+}
+
+void
+ccstr_init_and_register_delete_buffer_error_handler (cce_destination_t L, cce_error_handler_t * const H, ccstr_buffer_t const * const B)
+{
+  cce_init_and_register_handler(L, H, cce_default_error_handler_function,
+				cce_resource_pointer(B), cce_resource_destructor(ccname_delete(ccstr_buffer_t)));
 }
 
 
@@ -163,7 +179,7 @@ ccname_init(ccstr_buffer_t, clean) (cce_destination_t L, cce_clean_handler_t * c
 				    size_t const initial_buflen)
 {
   ccname_init(ccstr_buffer_t)(L, B, initial_buflen);
-  ccstr_init_and_register_buffer_clean_handler(L, H, B);
+  ccstr_init_and_register_final_buffer_handler(L, H, B);
 }
 
 void
@@ -171,7 +187,7 @@ ccname_init(ccstr_buffer_t, error) (cce_destination_t L, cce_error_handler_t * c
 				    size_t const initial_buflen)
 {
   ccname_init(ccstr_buffer_t)(L, B, initial_buflen);
-  ccstr_init_and_register_buffer_error_handler(L, H, B);
+  ccstr_init_and_register_final_buffer_handler(L, H, B);
 }
 
 /* ------------------------------------------------------------------ */
@@ -181,7 +197,7 @@ ccname_init(ccstr_buffer_t, copy, clean) (cce_destination_t L, cce_clean_handler
 					  ccstr_buffer_t * const dst, ccstr_buffer_t const * const src)
 {
   ccname_init(ccstr_buffer_t, copy)(L, dst, src);
-  ccstr_init_and_register_buffer_clean_handler(L, H, dst);
+  ccstr_init_and_register_final_buffer_handler(L, H, dst);
 }
 
 void
@@ -189,7 +205,7 @@ ccname_init(ccstr_buffer_t, copy, error) (cce_destination_t L, cce_error_handler
 					  ccstr_buffer_t * const dst, ccstr_buffer_t const * const src)
 {
   ccname_init(ccstr_buffer_t, copy)(L, dst, src);
-  ccstr_init_and_register_buffer_error_handler(L, H, dst);
+  ccstr_init_and_register_final_buffer_handler(L, H, dst);
 }
 
 /* ------------------------------------------------------------------ */
@@ -198,7 +214,7 @@ ccstr_buffer_t *
 ccname_new(ccstr_buffer_t, clean) (cce_destination_t L, cce_clean_handler_t * const H, size_t initial_buflen)
 {
   ccstr_buffer_t *	B = ccname_new(ccstr_buffer_t)(L, initial_buflen);
-  ccstr_init_and_register_buffer_clean_handler(L, H, B);
+  ccstr_init_and_register_delete_buffer_handler(L, H, B);
   return B;
 }
 
@@ -206,7 +222,7 @@ ccstr_buffer_t *
 ccname_new(ccstr_buffer_t, error) (cce_destination_t L, cce_error_handler_t * const H, size_t initial_buflen)
 {
   ccstr_buffer_t *	B = ccname_new(ccstr_buffer_t)(L, initial_buflen);
-  ccstr_init_and_register_buffer_error_handler(L, H, B);
+  ccstr_init_and_register_delete_buffer_handler(L, H, B);
   return B;
 }
 
@@ -216,7 +232,7 @@ ccstr_buffer_t *
 ccname_new(ccstr_buffer_t, copy, clean) (cce_destination_t L, cce_clean_handler_t * const H, ccstr_buffer_t const * const src)
 {
   ccstr_buffer_t *	dst = ccname_new(ccstr_buffer_t, copy)(L, src);
-  ccstr_init_and_register_buffer_clean_handler(L, H, dst);
+  ccstr_init_and_register_delete_buffer_handler(L, H, dst);
   return dst;
 }
 
@@ -224,7 +240,7 @@ ccstr_buffer_t *
 ccname_new(ccstr_buffer_t, copy, error) (cce_destination_t L, cce_error_handler_t * const H, ccstr_buffer_t const * const src)
 {
   ccstr_buffer_t *	dst = ccname_new(ccstr_buffer_t, copy)(L, src);
-  ccstr_init_and_register_buffer_error_handler(L, H, dst);
+  ccstr_init_and_register_delete_buffer_handler(L, H, dst);
   return dst;
 }
 
@@ -405,6 +421,44 @@ ccstr_buffer_write (cce_destination_t L, ccstr_buffer_t const * const B, int con
     /* An error occurred. */
     cce_raise(L, cce_condition_new_errno_clear());
   }
+}
+
+
+/** --------------------------------------------------------------------
+ ** Trait "ccstructs_dtor_T": implementation for "ccstr_buffer_t".
+ ** ----------------------------------------------------------------- */
+
+static ccstructs_core_destructor_fun_t	ccstr_buffer_embedded_destructor;
+static ccstructs_core_destructor_fun_t	ccstr_buffer_standalone_destructor;
+
+ccstructs_dtor_T
+ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, embedded) (ccstr_buffer_t const * const B)
+{
+  return ccname_new(ccstructs_dtor_T)(ccstructs_core(B), ccstr_buffer_embedded_destructor);
+}
+
+ccstructs_dtor_T
+ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, standalone) (ccstr_buffer_t const * const B)
+{
+  return ccname_new(ccstructs_dtor_T)(ccstructs_core(B), ccstr_buffer_standalone_destructor);
+}
+
+/* ------------------------------------------------------------------ */
+
+void
+ccstr_buffer_embedded_destructor (ccstructs_core_t * S)
+{
+  CCSTRUCTS_PC(ccstr_buffer_t, self, S);
+
+  ccname_final(ccstr_buffer_t)(self);
+}
+
+void
+ccstr_buffer_standalone_destructor (ccstructs_core_t * S)
+{
+  CCSTRUCTS_PC(ccstr_buffer_t, self, S);
+
+  ccname_delete(ccstr_buffer_t)(self);
 }
 
 

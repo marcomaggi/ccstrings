@@ -71,18 +71,33 @@ ccstr_decl void ccname_delete(ccstr_buffer_t) (ccstr_buffer_t * B)
  ** Buffer objects: exception handlers.
  ** ----------------------------------------------------------------- */
 
-ccstr_decl void ccstr_init_and_register_buffer_clean_handler (cce_destination_t L,
+ccstr_decl void ccstr_init_and_register_final_buffer_clean_handler (cce_destination_t L,
 							      cce_clean_handler_t * H, ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1,2,3)));
 
-ccstr_decl void ccstr_init_and_register_buffer_error_handler (cce_destination_t L,
+ccstr_decl void ccstr_init_and_register_final_buffer_error_handler (cce_destination_t L,
 							      cce_error_handler_t * H, ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1,2,3)));
 
-#define ccstr_init_and_register_buffer_handler(L,H,B)			\
+#define ccstr_init_and_register_final_buffer_handler(L,H,B)			\
   _Generic((H),								\
-	   cce_clean_handler_t *: ccstr_init_and_register_buffer_clean_handler, \
-	   cce_error_handler_t *: ccstr_init_and_register_buffer_error_handler)(L,H,B)
+	   cce_clean_handler_t *: ccstr_init_and_register_final_buffer_clean_handler, \
+	   cce_error_handler_t *: ccstr_init_and_register_final_buffer_error_handler)(L,H,B)
+
+/* ------------------------------------------------------------------ */
+
+ccstr_decl void ccstr_init_and_register_delete_buffer_clean_handler (cce_destination_t L,
+							      cce_clean_handler_t * H, ccstr_buffer_t const * B)
+  __attribute__((__nonnull__(1,2,3)));
+
+ccstr_decl void ccstr_init_and_register_delete_buffer_error_handler (cce_destination_t L,
+							      cce_error_handler_t * H, ccstr_buffer_t const * B)
+  __attribute__((__nonnull__(1,2,3)));
+
+#define ccstr_init_and_register_delete_buffer_handler(L,H,B)			\
+  _Generic((H),								\
+	   cce_clean_handler_t *: ccstr_init_and_register_delete_buffer_clean_handler, \
+	   cce_error_handler_t *: ccstr_init_and_register_delete_buffer_error_handler)(L,H,B)
 
 
 /** --------------------------------------------------------------------
@@ -217,9 +232,15 @@ ccstr_buffer_target_ascii (ccstr_buffer_t * B)
  ** Buffer objects: implemented interfaces.
  ** ----------------------------------------------------------------- */
 
+ccstr_decl ccstructs_dtor_T ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, embedded) (ccstr_buffer_t const * B)
+  __attribute__((__nonnull__(1)));
+
+ccstr_decl ccstructs_dtor_T ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, standalone) (ccstr_buffer_t const * B)
+  __attribute__((__nonnull__(1)));
+
 /* Constructor for a "ccstructs_dumpable_T" trait that prints a struct representation
    on some output channel. */
-ccstructs_decl ccstructs_dumpable_T ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t) (ccstr_buffer_t const * B)
+ccstr_decl ccstructs_dumpable_T ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t) (ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1)));
 
 

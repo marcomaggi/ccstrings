@@ -933,34 +933,84 @@ if (cce_location(L)) @{
 @subsection Exception handlers
 
 
-Exception handlers allow us to trigger finalisation of buffer instances upon leaving a location
-context, @ccexceptionsref{handlers, The location handlers @api{}}.
+@menu
+* buffers ctors handlers embedded::    Exception handlers for embedded
+                                       buffer instances.
+* buffers ctors handlers standalone::  Exception handlers for standalone
+                                       buffer instances.
+@end menu
+
+@c page
+@node buffers ctors handlers embedded
+@subsubsection Exception handlers for embedded buffer instances
+
+
+An @dfn{embedded instance} is a @struct{} instance allocated on the stack or embedded into another,
+enclosing, @struct{} instance.  Exception handlers allow us to trigger finalisation of buffer
+instances upon leaving a location context, @ccexceptionsref{handlers, The location handlers @api{}}.
 
 The following definitions are accessible in the header file @file{ccstrings.h}.
 
 
-@deftypefun void ccstr_init_and_register_buffer_clean_handler (cce_destination_t @var{L}, cce_clean_handler_t * @var{H}, ccstr_buffer_t const * @var{B})
+@deftypefun void ccstr_init_and_register_final_buffer_clean_handler (cce_destination_t @var{L}, cce_clean_handler_t * @var{H}, ccstr_buffer_t const * @var{B})
 Associate the buffer referenced by @var{B} to the handler referenced by @var{H} in the context of
 the location @var{L}.
 @end deftypefun
 
 
-@deftypefun void ccstr_init_and_register_buffer_error_handler (cce_destination_t @var{L}, cce_error_handler_t * @var{H}, ccstr_buffer_t const * @var{B})
+@deftypefun void ccstr_init_and_register_final_buffer_error_handler (cce_destination_t @var{L}, cce_error_handler_t * @var{H}, ccstr_buffer_t const * @var{B})
 Associate the buffer referenced by @var{B} to the handler referenced by @var{H} in the context of
 the location @var{L}.
 @end deftypefun
 
 
-@deftypefn {Preprocessor Macro} void ccstr_init_and_register_buffer_handler (cce_destination_t @var{L}, @var{H}, ccstr_buffer_t const * @var{B})
+@deftypefn {Preprocessor Macro} void ccstr_init_and_register_final_buffer_handler (cce_destination_t @var{L}, @var{H}, ccstr_buffer_t const * @var{B})
 Associate the buffer referenced by @var{B} to the handler referenced by @var{H} in the context of
 the location @var{L}.  If the type of the pointer @var{H} is:
 
 @table @code
 @item cce_clean_handler_t *
-The macro use expands into a call to @cfunc{ccstr_init_and_register_buffer_clean_handler}.
+The macro use expands into a call to @cfunc{ccstr_init_and_register_final_buffer_clean_handler}.
 
 @item cce_error_handler_t *
-The macro use expands into a call to @cfunc{ccstr_init_and_register_buffer_error_handler}.
+The macro use expands into a call to @cfunc{ccstr_init_and_register_final_buffer_error_handler}.
+@end table
+@end deftypefn
+
+@c page
+@node buffers ctors handlers standalone
+@subsubsection Exception handlers for standalone buffer instances
+
+
+A @dfn{standalone instance} is @struct{} instance dynamically allocated on the heap.  Exception
+handlers allow us to trigger deleteisation of buffer instances upon leaving a location context,
+@ccexceptionsref{handlers, The location handlers @api{}}.
+
+The following definitions are accessible in the header file @file{ccstrings.h}.
+
+
+@deftypefun void ccstr_init_and_register_delete_buffer_clean_handler (cce_destination_t @var{L}, cce_clean_handler_t * @var{H}, ccstr_buffer_t const * @var{B})
+Associate the buffer referenced by @var{B} to the handler referenced by @var{H} in the context of
+the location @var{L}.
+@end deftypefun
+
+
+@deftypefun void ccstr_init_and_register_delete_buffer_error_handler (cce_destination_t @var{L}, cce_error_handler_t * @var{H}, ccstr_buffer_t const * @var{B})
+Associate the buffer referenced by @var{B} to the handler referenced by @var{H} in the context of
+the location @var{L}.
+@end deftypefun
+
+
+@deftypefn {Preprocessor Macro} void ccstr_init_and_register_delete_buffer_handler (cce_destination_t @var{L}, @var{H}, ccstr_buffer_t const * @var{B})
+Associate the buffer referenced by @var{B} to the handler referenced by @var{H} in the context of
+the location @var{L}.  If the type of the pointer @var{H} is:
+
+@table @code
+@item cce_clean_handler_t *
+The macro use expands into a call to @cfunc{ccstr_init_and_register_delete_buffer_clean_handler}.
+
+@item cce_error_handler_t *
+The macro use expands into a call to @cfunc{ccstr_init_and_register_delete_buffer_error_handler}.
 @end table
 @end deftypefn
 
@@ -1093,6 +1143,86 @@ buffer is left untouched and its contents are still valid.
 
 @value{PACKAGE} implements some traits for the @struct{} type @objtype{ccstr_buffer_t}; the core
 traits are defined by the package CCStructs, @ccstructsref{Top, CCStructs}.
+
+
+@deftypefun ccstructs_dtor_T {ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, embedded)} (ccstr_buffer_t const * @var{B})
+Constructor for a @objtype{ccstructs_dtor_T} trait that destroys an embedded buffer instance,
+@ccstructsref{dtor, The @trait{dtor} trait}.  We can use it as follows:
+
+@smallexample
+cce_location_t                L[1];
+ccstr_buffer_t                B[1];
+ccstructs_clean_handler_t     B_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccstructs_dtor_T    DB;
+
+  ccname_init(ccstr_buffer_t)(L, B, 64);
+  DB = ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, embedded)(B);
+  ccstructs_init_and_register_handler(L, B_H, DB);
+
+  ccstr_buffer_format(L, B, "These are the buffer's contents.\n");
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
+
+
+@deftypefun ccstructs_dtor_T {ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, standalone)} (ccstr_buffer_t const * @var{B})
+Constructor for a @objtype{ccstructs_dtor_T} trait that destroys a standalone buffer instance,
+@ccstructsref{dtor, The @trait{dtor} trait}.  We can use it as follows:
+
+@smallexample
+cce_location_t                L[1];
+ccstructs_clean_handler_t     B_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccstr_buffer_t      *B;
+  ccstructs_dtor_T    DB;
+
+  B  = ccname_new(ccstr_buffer_t)(L, 64);
+  DB = ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, standalone)(B);
+  ccstructs_init_and_register_handler(L, B_H, DB);
+
+  ccstr_buffer_format(L, B, "These are the buffer's contents.\n");
+  ccstructs_dumpable_dump
+    (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
+
+
+@deftypefun ccstructs_dumpable_T {ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)} (ccstr_buffer_t const * @var{B})
+Constructor for a @objtype{ccstructs_dumpable_T} trait that prints a struct representation on
+@stderr{}, @ccstructsref{dumpable, The @trait{dumpable} trait}.  We can use it as follows:
+
+@smallexample
+cce_location_t        L[1];
+cce_clean_handler_t   B_H[1];
+
+if (cce_location(L)) @{
+  cce_run_catch_handlers_raise(L, upper_L);
+@} else @{
+  ccstr_buffer_t        *B;
+  ccstructs_dumpable_T   DB;
+
+  B = ccname_new(ccstr_buffer_t, clean)(L, B_H, 64);
+  ccstr_buffer_format(L, B, "These are the buffer's contents.\n");
+
+  DB = ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B);
+  ccstructs_dumpable_dump(L, DB);
+
+  cce_run_body_handlers(L);
+@}
+@end smallexample
+@end deftypefun
 
 @c page
 @c ------------------------------------------------------------

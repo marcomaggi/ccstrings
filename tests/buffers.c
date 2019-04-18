@@ -54,7 +54,7 @@ ccname_init(envelope_t) (cce_destination_t upper_L, envelope_t * E)
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
     ccname_init(ccstr_buffer_t)(L, E->B, 64);
-    ccstr_init_and_register_buffer_handler(L, B_H, E->B);
+    ccstr_init_and_register_final_buffer_handler(L, B_H, E->B);
 
     /* Initialise the other fields of E, if any. */
     cce_run_body_handlers(L);
@@ -113,7 +113,7 @@ test_1_1 (cce_destination_t upper_L)
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
     ccname_init(ccstr_buffer_t)(L, B, 64);
-    ccstr_init_and_register_buffer_handler(L, B_H, B);
+    ccstr_init_and_register_final_buffer_handler(L, B_H, B);
     ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
     ccstructs_dumpable_dump
       (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
@@ -137,7 +137,7 @@ test_1_2 (cce_destination_t upper_L)
     }
   } else {
     ccname_init(ccstr_buffer_t)(L, B, 64);
-    ccstr_init_and_register_buffer_handler(L, B_H, B);
+    ccstr_init_and_register_final_buffer_handler(L, B_H, B);
     ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
     ccstructs_dumpable_dump
       (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
@@ -157,11 +157,11 @@ test_1_3 (cce_destination_t upper_L)
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
     ccname_init(ccstr_buffer_t)(L, src, 64);
-    ccstr_init_and_register_buffer_handler(L, src_H, src);
+    ccstr_init_and_register_final_buffer_handler(L, src_H, src);
     ccstr_buffer_format(L, src, "These are the buffer's contents (%s).\n", __func__);
 
     ccname_init(ccstr_buffer_t, copy)(L, dst, src);
-    ccstr_init_and_register_buffer_handler(L, dst_H, dst);
+    ccstr_init_and_register_final_buffer_handler(L, dst_H, dst);
 
     ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
     ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
@@ -178,18 +178,22 @@ test_1_4 (cce_destination_t upper_L)
   cce_error_handler_t	src_H[1], dst_H[1];
 
   if (cce_location(L)) {
-    cce_run_catch_handlers_raise(L, upper_L);
+    if (cctests_condition_is_signal_1(cce_condition(L))) {
+      cce_run_catch_handlers_final(L);
+    } else {
+      cce_run_catch_handlers_raise(L, upper_L);
+    }
   } else {
     ccname_init(ccstr_buffer_t)(L, src, 64);
-    ccstr_init_and_register_buffer_handler(L, src_H, src);
+    ccstr_init_and_register_final_buffer_handler(L, src_H, src);
     ccstr_buffer_format(L, src, "These are the buffer's contents (%s).\n", __func__);
 
     ccname_init(ccstr_buffer_t, copy)(L, dst, src);
-    ccstr_init_and_register_buffer_handler(L, dst_H, dst);
+    ccstr_init_and_register_final_buffer_handler(L, dst_H, dst);
 
     ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
     ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
-    cce_run_body_handlers(L);
+    cce_raise(L, cctests_condition_new_signal_1());
   }
 }
 
@@ -350,7 +354,7 @@ test_3_1 (cce_destination_t upper_L)
     cce_run_catch_handlers_raise(L, upper_L);
   } else {
     ccstr_buffer_t	*B = ccname_new(ccstr_buffer_t)(L, 64);
-    ccstr_init_and_register_buffer_handler(L, B_H, B);
+    ccstr_init_and_register_delete_buffer_handler(L, B_H, B);
 
     ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
     ccstructs_dumpable_dump
@@ -374,7 +378,7 @@ test_3_2 (cce_destination_t upper_L)
     }
   } else {
     ccstr_buffer_t	*B = ccname_new(ccstr_buffer_t)(L, 64);
-    ccstr_init_and_register_buffer_handler(L, B_H, B);
+    ccstr_init_and_register_delete_buffer_handler(L, B_H, B);
 
     ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
     ccstructs_dumpable_dump
@@ -395,11 +399,11 @@ test_3_3 (cce_destination_t upper_L)
     ccstr_buffer_t	*src, *dst;
 
     src = ccname_new(ccstr_buffer_t)(L, 64);
-    ccstr_init_and_register_buffer_handler(L, src_H, src);
+    ccstr_init_and_register_delete_buffer_handler(L, src_H, src);
     ccstr_buffer_format(L, src, "These are the buffer's contents (%s).\n", __func__);
 
     dst = ccname_new(ccstr_buffer_t, copy)(L, src);
-    ccstr_init_and_register_buffer_handler(L, dst_H, dst);
+    ccstr_init_and_register_delete_buffer_handler(L, dst_H, dst);
 
     ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(src));
     ccstructs_dumpable_dump(L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(dst));
@@ -632,6 +636,117 @@ test_5_5 (cce_destination_t upper_L)
 
 
 /** --------------------------------------------------------------------
+ ** Trait: dtor implementations.
+ ** ----------------------------------------------------------------- */
+
+void
+test_6_1 (cce_destination_t upper_L)
+/* Test the "dtor" trait with embedded buffers, clean handler. */
+{
+  cce_location_t		L[1];
+  ccstr_buffer_t		B[1];
+  ccstructs_clean_handler_t	B_H[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccstructs_dtor_T	DB;
+
+    ccname_init(ccstr_buffer_t)(L, B, 64);
+    DB = ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, embedded)(B);
+    ccstructs_init_and_register_handler(L, B_H, DB);
+
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+    cce_run_body_handlers(L);
+  }
+}
+
+void
+test_6_2 (cce_destination_t upper_L)
+/* Test the "dtor" trait with embedded buffers, error handler. */
+{
+  cce_location_t		L[1];
+  ccstr_buffer_t		B[1];
+  ccstructs_error_handler_t	B_H[1];
+
+  if (cce_location(L)) {
+    if (cctests_condition_is_signal_1(cce_condition(L))) {
+      cce_run_catch_handlers_final(L);
+    } else {
+      cce_run_catch_handlers_raise(L, upper_L);
+    }
+  } else {
+    ccstructs_dtor_T	DB;
+
+    ccname_init(ccstr_buffer_t)(L, B, 64);
+    DB = ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, embedded)(B);
+    ccstructs_init_and_register_handler(L, B_H, DB);
+
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+    cce_raise(L, cctests_condition_new_signal_1());
+  }
+}
+
+/* ------------------------------------------------------------------ */
+
+void
+test_6_3 (cce_destination_t upper_L)
+/* Test the "dtor" trait with standalone buffers, clean handler. */
+{
+  cce_location_t		L[1];
+  ccstructs_clean_handler_t	B_H[1];
+
+  if (cce_location(L)) {
+    cce_run_catch_handlers_raise(L, upper_L);
+  } else {
+    ccstr_buffer_t	*B;
+    ccstructs_dtor_T	DB;
+
+    B  = ccname_new(ccstr_buffer_t)(L, 64);
+    DB = ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, standalone)(B);
+    ccstructs_init_and_register_handler(L, B_H, DB);
+
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+    cce_run_body_handlers(L);
+  }
+}
+
+void
+test_6_4 (cce_destination_t upper_L)
+/* Test the "dtor" trait with standalone buffers, error handler. */
+{
+  cce_location_t		L[1];
+  ccstructs_clean_handler_t	B_H[1];
+
+  if (cce_location(L)) {
+    if (cctests_condition_is_signal_1(cce_condition(L))) {
+      cce_run_catch_handlers_final(L);
+    } else {
+      cce_run_catch_handlers_raise(L, upper_L);
+    }
+  } else {
+    ccstr_buffer_t	*B;
+    ccstructs_dtor_T	DB;
+
+    B  = ccname_new(ccstr_buffer_t)(L, 64);
+    DB = ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, standalone)(B);
+    ccstructs_init_and_register_handler(L, B_H, DB);
+
+    ccstr_buffer_format(L, B, "These are the buffer's contents (%s).\n", __func__);
+    ccstructs_dumpable_dump
+      (L, ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t)(B));
+    cce_raise(L, cctests_condition_new_signal_1());
+  }
+}
+
+
+/** --------------------------------------------------------------------
  ** Let's go.
  ** ----------------------------------------------------------------- */
 
@@ -686,6 +801,15 @@ main (void)
       cctests_run(test_5_3);
       cctests_run(test_5_4);
       cctests_run(test_5_5);
+    }
+    cctests_end_group();
+
+    cctests_begin_group("dtor trait");
+    {
+      cctests_run(test_6_1);
+      cctests_run(test_6_2);
+      cctests_run(test_6_3);
+      cctests_run(test_6_4);
     }
     cctests_end_group();
   }
