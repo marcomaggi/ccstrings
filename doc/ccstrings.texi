@@ -148,7 +148,6 @@ included in the section entitled ``@gnu{} Free Documentation License''.
 * overview::                    Overview of the package.
 * version::                     Version functions.
 * init::                        Library initialisation.
-* typedefs::                    Some type definitions.
 * conditions::                  Condition objects.
 * buffers::                     Collecting output in buffers.
 
@@ -253,37 +252,6 @@ Initialise the internal structures of the library.  It is fine to call this func
 library is built with @gcc{}: it will be called automatically by the library initialisation code.
 @end quotation
 @end deftypefun
-
-@c page
-@node typedefs
-@chapter Some type definitions
-
-
-@deftp {Struct Typedef} ccstr_block_t
-Type of data structures representing memory blocks.  It has the following fields:
-
-@table @code
-@item int8_t * ptr
-Pointer to the memory block.
-
-@item size_t len
-Number of bytes in the memory block.
-@end table
-@end deftp
-
-
-@deftp {Struct Typedef} ccstr_ascii_t
-Type of data structures representing an @ascii{} string, @strong{not} necessarily zero--terminated.
-It has the following fields:
-
-@table @code
-@item char * ptr
-Pointer to the memory block.
-
-@item size_t len
-Number of characters in the memory block.
-@end table
-@end deftp
 
 @c page
 @node conditions
@@ -1110,15 +1078,15 @@ Return @ctrue{} if the buffer is full; otherwise return @cfalse{}.
 @end deftypefun
 
 
-@deftypefun ccstr_block_t ccstr_buffer_output_block (ccstr_buffer_t * @var{B})
-@deftypefunx ccstr_ascii_t ccstr_buffer_output_ascii (ccstr_buffer_t * @var{B})
+@deftypefun ccmem_block_t ccstr_buffer_output_block (ccstr_buffer_t * @var{B})
+@deftypefunx ccmem_ascii_t ccstr_buffer_output_ascii (ccstr_buffer_t * @var{B})
 Return a block representing the data in the buffer.  If @var{B} references an initialised buffer:
 the pointer in the block is never @cnull{}.
 @end deftypefun
 
 
-@deftypefun ccstr_block_t ccstr_buffer_target_block (ccstr_buffer_t * @var{B})
-@deftypefunx ccstr_ascii_t ccstr_buffer_target_ascii (ccstr_buffer_t * @var{B})
+@deftypefun ccmem_block_t ccstr_buffer_target_block (ccstr_buffer_t * @var{B})
+@deftypefunx ccmem_ascii_t ccstr_buffer_target_ascii (ccstr_buffer_t * @var{B})
 Return a block representing the free room at the end of the buffer.  If @var{B} references an
 initialised buffer: the pointer in the block is never @cnull{}.  The return value of this function
 is meaningful only if a call to @cfunc{ccstr_buffer_full_p} applied to the same buffer returns
