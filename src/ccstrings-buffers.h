@@ -72,14 +72,14 @@ ccstr_decl void ccname_delete(ccstr_buffer_t) (ccstr_buffer_t * B)
  ** ----------------------------------------------------------------- */
 
 ccstr_decl void ccstr_init_and_register_final_buffer_clean_handler (cce_destination_t L,
-							      cce_clean_handler_t * H, ccstr_buffer_t const * B)
+								    cce_clean_handler_t * H, ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1,2,3)));
 
 ccstr_decl void ccstr_init_and_register_final_buffer_error_handler (cce_destination_t L,
-							      cce_error_handler_t * H, ccstr_buffer_t const * B)
+								    cce_error_handler_t * H, ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1,2,3)));
 
-#define ccstr_init_and_register_final_buffer_handler(L,H,B)			\
+#define ccstr_init_and_register_final_buffer_handler(L,H,B)		\
   _Generic((H),								\
 	   cce_clean_handler_t *: ccstr_init_and_register_final_buffer_clean_handler, \
 	   cce_error_handler_t *: ccstr_init_and_register_final_buffer_error_handler)(L,H,B)
@@ -87,14 +87,14 @@ ccstr_decl void ccstr_init_and_register_final_buffer_error_handler (cce_destinat
 /* ------------------------------------------------------------------ */
 
 ccstr_decl void ccstr_init_and_register_delete_buffer_clean_handler (cce_destination_t L,
-							      cce_clean_handler_t * H, ccstr_buffer_t const * B)
+								     cce_clean_handler_t * H, ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1,2,3)));
 
 ccstr_decl void ccstr_init_and_register_delete_buffer_error_handler (cce_destination_t L,
-							      cce_error_handler_t * H, ccstr_buffer_t const * B)
+								     cce_error_handler_t * H, ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1,2,3)));
 
-#define ccstr_init_and_register_delete_buffer_handler(L,H,B)			\
+#define ccstr_init_and_register_delete_buffer_handler(L,H,B)		\
   _Generic((H),								\
 	   cce_clean_handler_t *: ccstr_init_and_register_delete_buffer_clean_handler, \
 	   cce_error_handler_t *: ccstr_init_and_register_delete_buffer_error_handler)(L,H,B)
@@ -162,7 +162,7 @@ ccstr_decl void ccstr_buffer_enlarge (cce_destination_t L, ccstr_buffer_t * B, s
 
 __attribute__((__pure__,__nonnull__(1),__always_inline__))
 static inline bool
-ccstr_buffer_full_p (ccstr_buffer_t * B)
+ccstr_buffer_is_full (ccstr_buffer_t * B)
 /* Return true if the buffer is full. */
 {
   return (B->bufoff < B->buflen)? false : true;
@@ -202,9 +202,9 @@ ccstr_buffer_output_ascii (ccstr_buffer_t * B)
 __attribute__((__pure__,__nonnull__(1),__always_inline__))
 static inline ccmem_block_t
 ccstr_buffer_target_block (ccstr_buffer_t * B)
-/* Return a block representing the free  room in the buffer.  The return
-   value   of  this   function  is   meaningful  only   if  a   call  to
-   "ccstr_buffer_full_p()" applied to the same buffer returns false. */
+/* Return a block representing the free room in the buffer.  The return value of this
+   function is meaningful  only if a call to "ccstr_buffer_is_full()"  applied to the
+   same buffer returns false. */
 {
   ccmem_block_t	block = {
     .ptr = (B->bufptr + B->bufoff),
@@ -216,9 +216,9 @@ ccstr_buffer_target_block (ccstr_buffer_t * B)
 __attribute__((__pure__,__nonnull__(1),__always_inline__))
 static inline ccmem_ascii_t
 ccstr_buffer_target_ascii (ccstr_buffer_t * B)
-/* Return a block representing the free  room in the buffer.  The return
-   value   of  this   function  is   meaningful  only   if  a   call  to
-   "ccstr_buffer_full_p()" applied to the same buffer returns false. */
+/* Return a block representing the free room in the buffer.  The return value of this
+   function is meaningful  only if a call to "ccstr_buffer_is_full()"  applied to the
+   same buffer returns false. */
 {
   ccmem_ascii_t	ascii = {
     .ptr = (char *)(B->bufptr + B->bufoff),

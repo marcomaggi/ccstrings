@@ -1073,7 +1073,7 @@ If an error occurs: raise an exception by performing a non--local exit to @var{L
 @section Inspecting buffers
 
 
-@deftypefun bool ccstr_buffer_full_p (ccstr_buffer_t * @var{B})
+@deftypefun bool ccstr_buffer_is_full (ccstr_buffer_t * @var{B})
 Return @ctrue{} if the buffer is full; otherwise return @cfalse{}.
 @end deftypefun
 
@@ -1089,7 +1089,7 @@ the pointer in the block is never @cnull{}.
 @deftypefunx ccmem_ascii_t ccstr_buffer_target_ascii (ccstr_buffer_t * @var{B})
 Return a block representing the free room at the end of the buffer.  If @var{B} references an
 initialised buffer: the pointer in the block is never @cnull{}.  The return value of this function
-is meaningful only if a call to @cfunc{ccstr_buffer_full_p} applied to the same buffer returns
+is meaningful only if a call to @cfunc{ccstr_buffer_is_full} applied to the same buffer returns
 @cfalse{}.
 @end deftypefun
 
