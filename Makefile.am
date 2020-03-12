@@ -6,6 +6,7 @@ EXTRA_DIST		= INSTALL meta/slackware/slack-desc.in
 dist_doc_DATA		= README COPYING
 AM_CPPFLAGS		= -I$(srcdir)/src
 AM_CFLAGS		= $(MMUX_CFLAGS)
+CLEANFILES		=
 
 ## --------------------------------------------------------------------
 
@@ -14,8 +15,11 @@ nodist_pkgconfig_DATA	= meta/scripts/ccstrings.pc
 
 #### documentation
 
+EXTRA_DIST		+= doc/cclibraries.style.css
+CLEANFILES		+= doc/cclibraries.css
+
 AM_MAKEINFOFLAGS	= --no-split
-AM_MAKEINFOHTMLFLAGS	= --split=node -c WORDS_IN_PAGE=0 \
+AM_MAKEINFOHTMLFLAGS	= --split=node -c WORDS_IN_PAGE=0 --css-ref=cclibraries.css \
 	-c PRE_BODY_CLOSE="<p>This document describes version <tt>$(PACKAGE_VERSION)</tt> of <em>$(PACKAGE_NAME)</em>.</p>"
 
 info_TEXINFOS		= doc/ccstrings.texi
@@ -28,6 +32,23 @@ doc_ccstrings_TEXINFOS	= \
 	doc/overview-ccmemory.texi	\
 	doc/lgpl-3.0.texi		\
 	doc/fdl-1.3.texi
+
+## --------------------------------------------------------------------
+
+doc/ccstrings.html/$(am__dirstamp): doc/$(am__dirstamp)
+	@$(MKDIR_P) doc/ccstrings.html/
+	@: > doc/ccstrings.html/$(am__dirstamp)
+
+doc/ccstrings.html/cclibraries.css: doc/cclibraries.style.css doc/ccstrings.html/$(am__dirstamp)
+	$(INSTALL) -m 0444 "$(top_srcdir)/doc/cclibraries.style.css" "$(builddir)/doc/ccstrings.html/cclibraries.css"
+
+## --------------------------------------------------------------------
+
+html-local: doc/ccstrings.html/cclibraries.css
+
+install-html-local:
+	$(MKDIR_P) "$(DESTDIR)$(htmldir)/ccstrings.html/"
+	$(INSTALL) -m 0444 $(builddir)/doc/ccstrings.html/cclibraries.css "$(DESTDIR)$(htmldir)/ccstrings.html/"
 
 
 #### libraries
