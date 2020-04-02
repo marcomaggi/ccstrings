@@ -58,7 +58,7 @@ extern "C" {
  ** ----------------------------------------------------------------- */
 
 cclib_decl void ccstr_library_init (void)
-  __attribute__((__constructor__));
+  CCLIB_FUNC_ATTRIBUTE_CONSTRUCTOR;
 
 
 /** --------------------------------------------------------------------
@@ -120,7 +120,8 @@ struct ccstr_t {
 cclib_decl ccstr_vtable_t const * const ccstr_malloc_vtable;
 
 cclib_decl ccstr_t * ccstr_new (cce_destination_t L, ccstr_vtable_t const * vtable, size_t num_of_wchars)
-  __attribute__((__nonnull__(1),__returns_nonnull__));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1)
+  CCLIB_FUNC_ATTRIBUTE_RETURNS_NONNULL;
 
 cclib_decl void ccstr_delete (ccstr_t * S)
   __attribute__((__nonnull__(1)));
