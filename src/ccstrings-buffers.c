@@ -7,7 +7,7 @@
 
 
 
-  Copyright (C) 2017-2019 Marco Maggi <mrc.mgg@gmail.com>
+  Copyright (C) 2017-2020 Marco Maggi <mrc.mgg@gmail.com>
 
   This is free software; you can redistribute  it and/or modify it under the terms of
   the GNU Lesser General Public License as published by the Free Software Foundation;
@@ -448,7 +448,7 @@ ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, standalone) (ccstr_buffer_t c
 void
 ccstr_buffer_embedded_destructor (ccstructs_core_t * S)
 {
-  CCSTRUCTS_PC(ccstr_buffer_t, self, S);
+  CCLIB_PC(ccstr_buffer_t, self, S);
 
   ccname_final(ccstr_buffer_t)(self);
 }
@@ -456,7 +456,7 @@ ccstr_buffer_embedded_destructor (ccstructs_core_t * S)
 void
 ccstr_buffer_standalone_destructor (ccstructs_core_t * S)
 {
-  CCSTRUCTS_PC(ccstr_buffer_t, self, S);
+  CCLIB_PC(ccstr_buffer_t, self, S);
 
   ccname_delete(ccstr_buffer_t)(self);
 }
@@ -481,7 +481,7 @@ ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t) (ccstr_buffer_t const * S
 void
 ccname_trait_method(ccstructs_dumpable_T, ccstr_buffer_t, dump) (cce_destination_t L, ccstructs_dumpable_T the_trait)
 {
-  CCSTRUCTS_PC(ccstr_buffer_t const, B, ccstructs_dumpable_self(the_trait));
+  CCLIB_PC(ccstr_buffer_t const, B, ccstructs_dumpable_self(the_trait));
 
   ccstr_buffer_fwrite(L, B, stderr);
 }

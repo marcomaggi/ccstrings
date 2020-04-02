@@ -7,7 +7,7 @@
 
 	This header file must be included in all the source files using CCStrings.
 
-  Copyright (C) 2017-2019 Marco Maggi <mrc.mgg@gmail.com>
+  Copyright (C) 2017-2020 Marco Maggi <mrc.mgg@gmail.com>
 
   This program is free  software: you can redistribute it and/or  modify it under the
   terms of the  GNU Lesser General Public  License as published by  the Free Software
@@ -46,24 +46,24 @@ struct ccstr_buffer_t {
  ** Buffer handling: plain constructors and destructors.
  ** ----------------------------------------------------------------- */
 
-ccstr_decl void ccname_init(ccstr_buffer_t) (cce_destination_t L, ccstr_buffer_t * B, size_t initial_buflen)
+cclib_decl void ccname_init(ccstr_buffer_t) (cce_destination_t L, ccstr_buffer_t * B, size_t initial_buflen)
   __attribute__((__nonnull__(1,2)));
 
-ccstr_decl void ccname_init(ccstr_buffer_t, copy) (cce_destination_t L, ccstr_buffer_t * dst, ccstr_buffer_t const * src)
+cclib_decl void ccname_init(ccstr_buffer_t, copy) (cce_destination_t L, ccstr_buffer_t * dst, ccstr_buffer_t const * src)
   __attribute__((__nonnull__(1,2,3)));
 
-ccstr_decl void ccname_final(ccstr_buffer_t) (ccstr_buffer_t * B)
+cclib_decl void ccname_final(ccstr_buffer_t) (ccstr_buffer_t * B)
   __attribute__((__nonnull__(1)));
 
 /* ------------------------------------------------------------------ */
 
-ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t) (cce_destination_t L, size_t initial_buflen)
+cclib_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t) (cce_destination_t L, size_t initial_buflen)
   __attribute__((__nonnull__(1),__returns_nonnull__));
 
-ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, copy) (cce_destination_t L, ccstr_buffer_t const * src)
+cclib_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, copy) (cce_destination_t L, ccstr_buffer_t const * src)
   __attribute__((__nonnull__(1,2),__returns_nonnull__));
 
-ccstr_decl void ccname_delete(ccstr_buffer_t) (ccstr_buffer_t * B)
+cclib_decl void ccname_delete(ccstr_buffer_t) (ccstr_buffer_t * B)
   __attribute__((__nonnull__(1)));
 
 
@@ -71,11 +71,11 @@ ccstr_decl void ccname_delete(ccstr_buffer_t) (ccstr_buffer_t * B)
  ** Buffer objects: exception handlers.
  ** ----------------------------------------------------------------- */
 
-ccstr_decl void ccstr_init_and_register_final_buffer_clean_handler (cce_destination_t L,
+cclib_decl void ccstr_init_and_register_final_buffer_clean_handler (cce_destination_t L,
 								    cce_clean_handler_t * H, ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1,2,3)));
 
-ccstr_decl void ccstr_init_and_register_final_buffer_error_handler (cce_destination_t L,
+cclib_decl void ccstr_init_and_register_final_buffer_error_handler (cce_destination_t L,
 								    cce_error_handler_t * H, ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1,2,3)));
 
@@ -86,11 +86,11 @@ ccstr_decl void ccstr_init_and_register_final_buffer_error_handler (cce_destinat
 
 /* ------------------------------------------------------------------ */
 
-ccstr_decl void ccstr_init_and_register_delete_buffer_clean_handler (cce_destination_t L,
+cclib_decl void ccstr_init_and_register_delete_buffer_clean_handler (cce_destination_t L,
 								     cce_clean_handler_t * H, ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1,2,3)));
 
-ccstr_decl void ccstr_init_and_register_delete_buffer_error_handler (cce_destination_t L,
+cclib_decl void ccstr_init_and_register_delete_buffer_error_handler (cce_destination_t L,
 								     cce_error_handler_t * H, ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1,2,3)));
 
@@ -104,39 +104,39 @@ ccstr_decl void ccstr_init_and_register_delete_buffer_error_handler (cce_destina
  ** Buffer handling: guarded constructors and destructors.
  ** ----------------------------------------------------------------- */
 
-ccstr_decl void ccname_init(ccstr_buffer_t, clean) (cce_destination_t L, cce_clean_handler_t * H,
+cclib_decl void ccname_init(ccstr_buffer_t, clean) (cce_destination_t L, cce_clean_handler_t * H,
 						    ccstr_buffer_t * B, size_t initial_buflen)
   __attribute__((__nonnull__(1,2,3)));
 
-ccstr_decl void ccname_init(ccstr_buffer_t, error) (cce_destination_t L, cce_error_handler_t * H,
+cclib_decl void ccname_init(ccstr_buffer_t, error) (cce_destination_t L, cce_error_handler_t * H,
 						    ccstr_buffer_t * B, size_t initial_buflen)
   __attribute__((__nonnull__(1,2,3)));
 
 /* ------------------------------------------------------------------ */
 
-ccstr_decl void ccname_init(ccstr_buffer_t, copy, clean) (cce_destination_t L, cce_clean_handler_t * H,
+cclib_decl void ccname_init(ccstr_buffer_t, copy, clean) (cce_destination_t L, cce_clean_handler_t * H,
 							  ccstr_buffer_t * dst, ccstr_buffer_t const * src)
   __attribute__((__nonnull__(1,2,3,4)));
 
-ccstr_decl void ccname_init(ccstr_buffer_t, copy, error) (cce_destination_t L, cce_error_handler_t * H,
+cclib_decl void ccname_init(ccstr_buffer_t, copy, error) (cce_destination_t L, cce_error_handler_t * H,
 							  ccstr_buffer_t * dst, ccstr_buffer_t const * src)
   __attribute__((__nonnull__(1,2,3,4)));
 
 /* ------------------------------------------------------------------ */
 
-ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, clean) (cce_destination_t L, cce_clean_handler_t * H, size_t initial_buflen)
+cclib_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, clean) (cce_destination_t L, cce_clean_handler_t * H, size_t initial_buflen)
   __attribute__((__nonnull__(1,2),__returns_nonnull__));
 
-ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, error) (cce_destination_t L, cce_error_handler_t * H, size_t initial_buflen)
+cclib_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, error) (cce_destination_t L, cce_error_handler_t * H, size_t initial_buflen)
   __attribute__((__nonnull__(1,2),__returns_nonnull__));
 
 /* ------------------------------------------------------------------ */
 
-ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, copy, clean) (cce_destination_t L, cce_clean_handler_t * H,
+cclib_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, copy, clean) (cce_destination_t L, cce_clean_handler_t * H,
 								     ccstr_buffer_t const * src)
   __attribute__((__nonnull__(1,2,3),__returns_nonnull__));
 
-ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, copy, error) (cce_destination_t L, cce_error_handler_t * H,
+cclib_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, copy, error) (cce_destination_t L, cce_error_handler_t * H,
 								     ccstr_buffer_t const * src)
   __attribute__((__nonnull__(1,2,3),__returns_nonnull__));
 
@@ -145,19 +145,19 @@ ccstr_decl ccstr_buffer_t * ccname_new(ccstr_buffer_t, copy, error) (cce_destina
  ** Buffer handling: format functions.
  ** ----------------------------------------------------------------- */
 
-ccstr_decl void ccstr_buffer_format (cce_destination_t L, ccstr_buffer_t * B, const char * template, ...)
+cclib_decl void ccstr_buffer_format (cce_destination_t L, ccstr_buffer_t * B, const char * template, ...)
   __attribute__((__nonnull__(1,2,3)));
 
-ccstr_decl void ccstr_buffer_vformat (cce_destination_t L, ccstr_buffer_t * B, const char * template, va_list ap)
+cclib_decl void ccstr_buffer_vformat (cce_destination_t L, ccstr_buffer_t * B, const char * template, va_list ap)
   __attribute__((__nonnull__(1,2,3)));
 
-ccstr_decl void ccstr_buffer_fwrite (cce_destination_t L, ccstr_buffer_t const * B, FILE * stream)
+cclib_decl void ccstr_buffer_fwrite (cce_destination_t L, ccstr_buffer_t const * B, FILE * stream)
   __attribute__((__nonnull__(1,2,3)));
 
-ccstr_decl void ccstr_buffer_write (cce_destination_t L, ccstr_buffer_t const * B, int filedes)
+cclib_decl void ccstr_buffer_write (cce_destination_t L, ccstr_buffer_t const * B, int filedes)
   __attribute__((__nonnull__(1,2)));
 
-ccstr_decl void ccstr_buffer_enlarge (cce_destination_t L, ccstr_buffer_t * B, size_t required_len)
+cclib_decl void ccstr_buffer_enlarge (cce_destination_t L, ccstr_buffer_t * B, size_t required_len)
   __attribute__((__nonnull__(1,2)));
 
 __attribute__((__pure__,__nonnull__(1),__always_inline__))
@@ -232,15 +232,15 @@ ccstr_buffer_target_ascii (ccstr_buffer_t * B)
  ** Buffer objects: implemented interfaces.
  ** ----------------------------------------------------------------- */
 
-ccstr_decl ccstructs_dtor_T ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, embedded) (ccstr_buffer_t const * B)
+cclib_decl ccstructs_dtor_T ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, embedded) (ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1)));
 
-ccstr_decl ccstructs_dtor_T ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, standalone) (ccstr_buffer_t const * B)
+cclib_decl ccstructs_dtor_T ccname_trait_new(ccstructs_dtor_T, ccstr_buffer_t, standalone) (ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1)));
 
 /* Constructor for a "ccstructs_dumpable_T" trait that prints a struct representation
    on some output channel. */
-ccstr_decl ccstructs_dumpable_T ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t) (ccstr_buffer_t const * B)
+cclib_decl ccstructs_dumpable_T ccname_trait_new(ccstructs_dumpable_T, ccstr_buffer_t) (ccstr_buffer_t const * B)
   __attribute__((__nonnull__(1)));
 
 

@@ -7,7 +7,7 @@
 
 	Test file for version functions.
 
-  Copyright (C) 2017 Marco Maggi <mrc.mgg@gmail.com>
+  Copyright (C) 2017, 2020 Marco Maggi <mrc.mgg@gmail.com>
 
   See the COPYING file.
 */
@@ -17,7 +17,7 @@
 #include <stdlib.h>
 
 int
-main (int argc CCSTR_UNUSED, const char *const argv[] CCSTR_UNUSED)
+main (int argc CCLIB_UNUSED, const char *const argv[] CCLIB_UNUSED)
 {
   printf("version number string: %s\n", ccstr_version_string());
   printf("libtool version number: %d:%d:%d\n",

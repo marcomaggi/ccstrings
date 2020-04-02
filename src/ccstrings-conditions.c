@@ -7,7 +7,7 @@
 
 
 
-  Copyright (C) 2017-2019 Marco Maggi <mrc.mgg@gmail.com>
+  Copyright (C) 2017-2020 Marco Maggi <mrc.mgg@gmail.com>
 
   This is free software; you can redistribute  it and/or modify it under the terms of
   the GNU Lesser General Public License as published by the Free Software Foundation;
@@ -64,7 +64,7 @@ ccstr_condition_delete_buffer_size_overflow (cce_condition_t * C)
 }
 
 char const *
-ccstr_condition_static_message_buffer_size_overflow (cce_condition_t const * C CCE_UNUSED)
+ccstr_condition_static_message_buffer_size_overflow (cce_condition_t const * C CCLIB_UNUSED)
 {
   return "requested new size of CCStrings buffer too big";
 }
@@ -72,7 +72,7 @@ ccstr_condition_static_message_buffer_size_overflow (cce_condition_t const * C C
 /* ------------------------------------------------------------------ */
 
 void
-ccstr_condition_init_buffer_size_overflow (cce_destination_t L CCSTR_UNUSED, ccstr_condition_buffer_size_overflow_t * C,
+ccstr_condition_init_buffer_size_overflow (cce_destination_t L CCLIB_UNUSED, ccstr_condition_buffer_size_overflow_t * C,
 					   ccstr_buffer_t const * B, size_t required_len)
 /* This initialisation function must be called both by:
  *
@@ -159,7 +159,7 @@ ccstr_condition_delete_buffer_output_incomplete (cce_condition_t * C)
 }
 
 char const *
-ccstr_condition_static_message_buffer_output_incomplete (cce_condition_t const * C CCE_UNUSED)
+ccstr_condition_static_message_buffer_output_incomplete (cce_condition_t const * C CCLIB_UNUSED)
 {
   return "writing buffer data to output device";
 }
@@ -167,7 +167,7 @@ ccstr_condition_static_message_buffer_output_incomplete (cce_condition_t const *
 /* ------------------------------------------------------------------ */
 
 void
-ccstr_condition_init_buffer_output_incomplete (cce_destination_t L CCSTR_UNUSED, ccstr_condition_buffer_output_incomplete_t * C,
+ccstr_condition_init_buffer_output_incomplete (cce_destination_t L CCLIB_UNUSED, ccstr_condition_buffer_output_incomplete_t * C,
 					   ccstr_buffer_t const * B, size_t written_len)
 /* This initialisation function must be called both by:
  *
