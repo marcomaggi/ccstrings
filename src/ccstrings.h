@@ -124,38 +124,40 @@ cclib_decl ccstr_t * ccstr_new (cce_destination_t L, ccstr_vtable_t const * vtab
   CCLIB_FUNC_ATTRIBUTE_RETURNS_NONNULL;
 
 cclib_decl void ccstr_delete (ccstr_t * S)
-  __attribute__((__nonnull__(1)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1);
 
 cclib_decl void ccstr_cleanup_handler_init (cce_destination_t L, cce_handler_t * H, ccstr_t * S)
-  __attribute__((__nonnull__(1,2,3)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2,3);
 
 cclib_decl void ccstr_error_handler_init (cce_destination_t L, cce_handler_t * H, ccstr_t * S)
-  __attribute__((__nonnull__(1,2,3)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2,3);
 
 /* ------------------------------------------------------------------ */
 
 cclib_decl ccstr_t * ccstr_new_from_static (cce_destination_t L, ccstr_vtable_t const * vtable, wchar_t const * str, size_t num_of_wchars)
-  __attribute__((__nonnull__(1,2,3),__returns_nonnull__));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2,3)
+  CCLIB_FUNC_ATTRIBUTE_RETURNS_NONNULL;
 
 cclib_decl ccstr_t * ccstr_new_from_staticz (cce_destination_t L, ccstr_vtable_t const * vtable, wchar_t const * str)
-  __attribute__((__nonnull__(1,2,3),__returns_nonnull__));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2,3)
+  CCLIB_FUNC_ATTRIBUTE_RETURNS_NONNULL;
 
 /* ------------------------------------------------------------------ */
 
 cclib_decl void ccstr_format (cce_destination_t L, ccstr_t * S, const char * template, ...)
-  __attribute__((__nonnull__(1,2,3)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2,3);
 
 cclib_decl void ccstr_vformat (cce_destination_t L, ccstr_t * S, const char * template, va_list ap)
-  __attribute__((__nonnull__(1,2,3)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2,3);
 
 cclib_decl void ccstr_fwrite (cce_destination_t L, ccstr_t * S, FILE * stream)
-  __attribute__((__nonnull__(1,2,3)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2,3);
 
 cclib_decl void ccstr_write (cce_destination_t L, ccstr_t * S, int filedes)
-  __attribute__((__nonnull__(1,2)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2);
 
 cclib_decl void ccstr_enlarge (cce_destination_t L, ccstr_t * S, size_t required_len)
-  __attribute__((__nonnull__(1,2)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2);
 
 
 /** --------------------------------------------------------------------
@@ -176,21 +178,22 @@ struct ccstr_condition_buffer_size_overflow_t {
 };
 
 cclib_decl void cce_descriptor_set_parent_to(ccstr_descriptor_buffer_size_overflow_t) (cce_descriptor_t * const D)
-  __attribute__((__nonnull__(1)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1);
 
 /* ------------------------------------------------------------------ */
 
 cclib_decl void ccstr_condition_init_buffer_size_overflow (cce_destination_t L,
 							   ccstr_condition_buffer_size_overflow_t * C,
 							   ccstr_buffer_t const * B, size_t required_len)
-  __attribute__((__nonnull__(1,2)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2);
 
 cclib_decl cce_condition_t const * ccstr_condition_new_buffer_size_overflow (cce_destination_t L,
 									     ccstr_buffer_t const * B, size_t required_len)
-  __attribute__((__nonnull__(1,2)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2);
 
 cclib_decl bool ccstr_condition_is_buffer_size_overflow (cce_condition_t const * C)
-  __attribute__((__pure__,__nonnull__(1)));
+  CCLIB_FUNC_ATTRIBUTE_PURE
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1);
 
 
 /** --------------------------------------------------------------------
@@ -211,21 +214,22 @@ struct ccstr_condition_buffer_output_incomplete_t {
 };
 
 cclib_decl void cce_descriptor_set_parent_to(ccstr_descriptor_buffer_output_incomplete_t) (cce_descriptor_t * const D)
-  __attribute__((__nonnull__(1)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1);
 
 /* ------------------------------------------------------------------ */
 
 cclib_decl void ccstr_condition_init_buffer_output_incomplete (cce_destination_t L,
 							       ccstr_condition_buffer_output_incomplete_t * C,
 							       ccstr_buffer_t const * B, size_t written_len)
-  __attribute__((__nonnull__(1,2)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2);
 
 cclib_decl cce_condition_t const * ccstr_condition_new_buffer_output_incomplete (cce_destination_t L,
 										 ccstr_buffer_t const * B, size_t written_len)
-  __attribute__((__nonnull__(1,2)));
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1,2);
 
 cclib_decl bool ccstr_condition_is_buffer_output_incomplete (cce_condition_t const * C)
-  __attribute__((__pure__,__nonnull__(1)));
+  CCLIB_FUNC_ATTRIBUTE_PURE
+  CCLIB_FUNC_ATTRIBUTE_NONNULL(1);
 
 
 /** --------------------------------------------------------------------
