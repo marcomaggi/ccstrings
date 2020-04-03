@@ -3,6 +3,18 @@
 			News file for CCStrings
 			=======================
 
+Revision 0.1.0-devel.2
+----------------------
+
+* Upgraded to CCExceptions version 0.10.0.
+
+* Upgraded to CCMemory version 0.3.0.
+
+* Upgraded to CCStructs version 0.4.0.
+
+* Upgraded to CCTests version 0.5.0.
+
+
 Revision 0.1.0-devel.1
 ----------------------
 
